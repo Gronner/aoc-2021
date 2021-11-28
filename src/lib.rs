@@ -1,8 +1,7 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
+mod day_template;
+
+pub fn get_days() -> Vec<fn()> {
+    vec![
+        day_template::run_day,
+    ]
 }
