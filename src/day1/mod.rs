@@ -26,17 +26,14 @@ pub fn run_day() {
 
 fn part1(input: &Vec<u32>) -> usize {
     input.windows(2)
-        .filter(|w: &&[u32]| w[1] > w[0])
+        .filter(|w| w[1] > w[0])
         .count()
 }
 
 fn part2(input: &Vec<u32>) -> usize {
-    input.windows(3)
+    part1(&input.windows(3)
         .map(|w| w.iter().sum())
-        .collect::<Vec<_>>()
-        .windows(2)
-        .filter(|w: &&[u32]| w[1] > w[0])
-        .count()
+        .collect::<Vec<_>>())
 }
 
 #[cfg(test)]
