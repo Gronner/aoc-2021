@@ -24,29 +24,19 @@ pub fn run_day() {
     println!("Running day {}:\n\tPart1 {}\n\tPart2 {}", DAY, part1(&input), part2(&input));
 }
 
-fn part1(input: &Vec<u32>) -> u32 {
-    let mut increased = 0;
-    let mut prev_val = input[0];
-    for val in input {
-        if *val > prev_val{
-            increased += 1;
-        }
-        prev_val = *val;
-    }
-    increased
+fn part1(input: &Vec<u32>) -> usize {
+    input.windows(2)
+        .filter(|w: &&[u32]| w[1] > w[0])
+        .count()
 }
 
-fn part2(input: &Vec<u32>) -> u32 {
-    let mut increased = 0;
-    let mut prev_val = input[0] + input[1] + input[2];
-    for val in input.windows(3) {
-        let sum = val.iter().sum();
-        if sum > prev_val{
-            increased += 1;
-        }
-        prev_val = sum;
-    }
-    increased
+fn part2(input: &Vec<u32>) -> usize {
+    input.windows(3)
+        .map(|w| w.iter().sum())
+        .collect::<Vec<_>>()
+        .windows(2)
+        .filter(|w: &&[u32]| w[1] > w[0])
+        .count()
 }
 
 #[cfg(test)]
