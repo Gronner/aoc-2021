@@ -13,14 +13,11 @@ fn get_input() -> Vec<String> {
 }
 
 fn parse_input(input: Vec<String>) -> Vec<Vec<String>> {
-    let re = Regex::new(r"(.+) (\d)").unwrap();
-    input
-        .iter()
-        .map(|i| {
-            for cap in re.captures_iter(i) {
-                return vec![cap[1].to_owned(), cap[2].to_owned()];
-        }
-        vec![]})
+    let re = Regex::new(r" ").unwrap();
+    input.iter()
+        .map(|i| re.split(i)
+            .map(|f| f.to_owned())
+            .collect())
         .collect::<Vec<_>>()
 }
 
@@ -67,20 +64,42 @@ mod tests {
     use super::*;
 
     #[test]
-    fn day0_part1_output() {
+    fn day2_part1_output() {
         let input = parse_input(get_input());
-        assert_eq!(1215, part1(&input));
+        assert_eq!(1694130, part1(&input));
     }
 
     #[test]
-    fn day0_part1_testcase1() {
-        let input = vec![199, 200, 208, 210, 200, 207, 240, 269, 260,263];
-        assert_eq!(7, part1(&input));
+    fn day2_part1_testcase1() {
+        let input = vec![
+            String::from("forward 5"),
+            String::from("down 5"),
+            String::from("forward 8"),
+            String::from("up 3"),
+            String::from("down 8"),
+            String::from("forward 2"),
+        ];
+        let input = parse_input(input);
+        assert_eq!(150, part1(&input));
     }
 
     #[test]
-    fn day0_part2_output() {
+    fn day2_part2_output() {
         let input = parse_input(get_input());
-        assert_eq!(1150, part2(&input));
+        assert_eq!(1698850445, part2(&input));
+    }
+
+    #[test]
+    fn day2_part2_testcase1() {
+        let input = vec![
+            String::from("forward 5"),
+            String::from("down 5"),
+            String::from("forward 8"),
+            String::from("up 3"),
+            String::from("down 8"),
+            String::from("forward 2"),
+        ];
+        let input = parse_input(input);
+        assert_eq!(900, part2(&input));
     }
 }

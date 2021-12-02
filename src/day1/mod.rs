@@ -41,19 +41,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn day0_part1_output() {
+    fn day1_part1_output() {
         let input = parse_input(get_input());
         assert_eq!(1215, part1(&input));
     }
 
     #[test]
-    fn day0_part1_testcase1() {
+    fn day1_part1_testcase1() {
         let input = vec![199, 200, 208, 210, 200, 207, 240, 269, 260,263];
         assert_eq!(7, part1(&input));
     }
 
     #[test]
-    fn day0_part2_output() {
+    fn day1_part2_output() {
         let input = parse_input(get_input());
         assert_eq!(1150, part2(&input));
     }
