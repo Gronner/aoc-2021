@@ -32,9 +32,9 @@ fn part1(input: &Vec<Vec<String>>) -> i32{
     let mut pos_y: i32 = 0;
     for inp in input {
         match (inp[0].as_ref(), inp[1].parse::<i32>().unwrap()) {
-            ("forward", m) => pos_x = pos_x + m,
-            ("down", m) => pos_y = pos_y + m,
-            ("up", m) => pos_y = pos_y - m,
+            ("forward", movement) => pos_x += movement,
+            ("down", movement) => pos_y += movement,
+            ("up", movement) => pos_y -= movement,
             (_, _) => panic!(),
         }
     }
@@ -45,14 +45,14 @@ fn part2(input: &Vec<Vec<String>>) -> i32 {
     let mut aim = 0;
     let mut pos_x: i32 = 0;
     let mut pos_y: i32 = 0;
-    for inp in input {
-        match (inp[0].as_ref(), inp[1].parse::<i32>().unwrap()) {
-            ("forward", m) => {
-                pos_x = pos_x + m;
-                pos_y = pos_y + (aim * m);
+    for command in input {
+        match (command[0].as_ref(), command[1].parse::<i32>().unwrap()) {
+            ("forward", movement) => {
+                pos_x += movement;
+                pos_y += aim * movement;
             }
-            ("down", m) => aim = aim + m,
-            ("up", m) => aim = aim - m,
+            ("down", change) => aim += change,
+            ("up", change) => aim -= change,
             (_, _) => panic!(),
         }
     }
