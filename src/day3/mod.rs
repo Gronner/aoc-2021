@@ -23,11 +23,96 @@ pub fn run_day() {
 }
 
 fn part1(input: &Vec<InputType>) -> u32{
-    0
+    let len_input_num = input[0].len();
+    let mut gamma = Vec::new();
+    for i in 0..len_input_num {
+        let mut zeros = 0;
+        let mut ones = 0;
+        for inp in input {
+            let bit = inp.chars().nth(i).unwrap();
+            if '0' == bit {
+                zeros += 1;
+            } else {
+                ones += 1;
+            }
+        }
+        if zeros > ones {
+            gamma.push(0);
+        } else {
+            gamma.push(1);
+        }
+    }
+    let mut gamma_val = 0;
+    for val in gamma {
+        gamma_val = gamma_val << 1 | val
+    }
+    let mask = 0b111111111111;
+    (!gamma_val & mask) * gamma_val
 }
 
 fn part2(input: &Vec<InputType>) -> u32 {
-    0
+    let o2_gen = 0;
+    let co_scrub = 0;
+    let mut numbers = Vec::new();
+    let num_len = input[0].len();
+    for inp in input {
+        numbers.push(u32::from_str_radix(inp, 2).unwrap());
+    }
+    let mut numbers2 = numbers.clone();
+
+    let mut current_bit = num_len;
+    while 1 != numbers.len() {
+        current_bit -= 1;
+        println!("{}", numbers.len());
+        let mut zeros = 0;
+        let mut ones = 0;
+        for number in &numbers {
+            if 0 != number & (1 << current_bit) {
+                ones += 1;
+            } else {
+                zeros += 1;
+            }
+        }
+        println!("{:?}", numbers);
+        println!("O : {}", zeros);
+        println!("1 : {}", ones);
+        if ones >= zeros {
+            numbers = numbers.clone().into_iter()
+                .filter(|n| 0 != (*n & (1 << current_bit))).collect();
+        } else {
+            numbers = numbers.clone().into_iter()
+                .filter(|n| 0 == (*n & (1 << current_bit))).collect();
+        }
+        println!("{:?}", numbers);
+    }
+
+    let mut current_bit = num_len;
+    while 1 != numbers2.len() {
+        current_bit -= 1;
+        println!("{}", numbers2.len());
+        let mut zeros = 0;
+        let mut ones = 0;
+        for number in &numbers2 {
+            if 0 != number & (1 << current_bit) {
+                ones += 1;
+            } else {
+                zeros += 1;
+            }
+        }
+        println!("{:?}", numbers2);
+        println!("O : {}", zeros);
+        println!("1 : {}", ones);
+        if zeros > ones {
+            numbers2 = numbers2.clone().into_iter()
+                .filter(|n| 0 != (*n & (1 << current_bit))).collect();
+        } else {
+            numbers2 = numbers2.clone().into_iter()
+                .filter(|n| 0 == (*n & (1 << current_bit))).collect();
+        }
+        println!("{:?}", numbers2);
+    }
+
+    numbers[0] * numbers2[0]    
 }
 
 #[cfg(test)]
