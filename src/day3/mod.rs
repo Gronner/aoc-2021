@@ -1,8 +1,7 @@
 use aoc_downloader::download_day;
-use regex::Regex;
 
 const DAY: u32 = 3;
-type InputType = String;
+type InputType = u32;
 
 fn get_input() -> String {
     download_day((DAY) as u32, "input").unwrap();
@@ -12,7 +11,7 @@ fn get_input() -> String {
 fn parse_input(input: &str) -> Vec<InputType> {
     input.lines()
         .filter(|line| "" != *line)
-        .map(|s| s.to_owned())
+        .map(|s| u32::from_str_radix(s, 2).unwrap())
         .collect::<Vec<_>>()
 }
 
@@ -22,42 +21,33 @@ pub fn run_day() {
     println!("Running day {}:\n\tPart1 {}\n\tPart2 {}", DAY, part1(&input), part2(&input));
 }
 
+fn bit_is_set(num: u32, bit: usize) -> bool {
+    0 != (num & (1 << bit))
+}
+
 fn part1(input: &Vec<InputType>) -> u32{
-    let len_input_num = input[0].len();
-    let mut gamma = Vec::new();
-    for i in 0..len_input_num {
-        let mut zeros = 0;
-        let mut ones = 0;
-        for inp in input {
-            let bit = inp.chars().nth(i).unwrap();
-            if '0' == bit {
-                zeros += 1;
-            } else {
-                ones += 1;
+    let num_len = u32::BITS as usize;
+    let mut gamma = vec![0; num_len];
+    for num in input {
+        for bit in 0..num_len {
+            if bit_is_set(*num, bit) {
+                gamma[bit] += 1;
             }
-        }
-        if zeros > ones {
-            gamma.push(0);
-        } else {
-            gamma.push(1);
         }
     }
     let mut gamma_val = 0;
-    for val in gamma {
-        gamma_val = gamma_val << 1 | val
+    for (bit, value) in gamma.iter().enumerate() {
+        if *value > (input.len() / 2) {
+            gamma_val = gamma_val | 1 << bit;
+        }
     }
     let mask = 0b111111111111;
     (!gamma_val & mask) * gamma_val
 }
 
-fn part2(input: &Vec<InputType>) -> u32 {
-    let o2_gen = 0;
-    let co_scrub = 0;
-    let mut numbers = Vec::new();
-    let num_len = input[0].len();
-    for inp in input {
-        numbers.push(u32::from_str_radix(inp, 2).unwrap());
-    }
+fn part2(numbers: &Vec<InputType>) -> u32 {
+    let num_len = 12;
+    let mut numbers = numbers.clone();
     let mut numbers2 = numbers.clone();
 
     let mut current_bit = num_len;
@@ -122,26 +112,12 @@ mod tests {
     #[test]
     fn day3_part1_output() {
         let input = parse_input(&get_input());
-        assert_eq!(1694130, part1(&input));
-    }
-
-    #[test]
-    fn day3_part1_testcase1() {
-        let input = "";
-        let input = parse_input(&input);
-        assert_eq!(150, part1(&input));
+        assert_eq!(1025636, part1(&input));
     }
 
     #[test]
     fn day3_part2_output() {
         let input = parse_input(&get_input());
-        assert_eq!(1698850445, part2(&input));
-    }
-
-    #[test]
-    fn day3_part2_testcase1() {
-        let input = "";
-        let input = parse_input(input);
-        assert_eq!(900, part2(&input));
+        assert_eq!(793873, part2(&input));
     }
 }
