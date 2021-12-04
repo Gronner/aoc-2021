@@ -114,12 +114,14 @@ pub fn run_day() {
     println!("Running day {}:\n\tPart1 {}\n\tPart2 {}", DAY, part1(&input), part2(&input));
 }
 
-fn part1(input: &Vec<InputType>) -> u32{
+fn get_numbers(input: &str) -> Vec<i32> {
     let re = Regex::new(r",").unwrap();
-    let numbers = re.split(&input[0])
+    re.split(&input)
         .map(|v| v.parse::<i32>().unwrap())
-        .collect::<Vec<_>>();
+        .collect::<Vec<_>>()
+}
 
+fn build_boards(input: &Vec<InputType>) -> Vec<Board> {
     let mut boards = Vec::new();
     for board in input[1..].chunks(5) {
         let mut board_setup = String::new();
@@ -129,6 +131,12 @@ fn part1(input: &Vec<InputType>) -> u32{
         }
         boards.push(Board::from_str(&board_setup).unwrap());
     }
+    boards
+}
+
+fn part1(input: &Vec<InputType>) -> u32{
+    let numbers = get_numbers(&input[0]);
+    let mut boards = build_boards(input);
 
     for number in numbers {
         for board in boards.iter_mut() {
@@ -141,20 +149,8 @@ fn part1(input: &Vec<InputType>) -> u32{
 }
 
 fn part2(input: &Vec<InputType>) -> u32 {
-    let re = Regex::new(r",").unwrap();
-    let numbers = re.split(&input[0])
-        .map(|v| v.parse::<i32>().unwrap())
-        .collect::<Vec<_>>();
-
-    let mut boards = Vec::new();
-    for board in input[1..].chunks(5) {
-        let mut board_setup = String::new();
-        for board_line in board {
-            board_setup.push_str(&board_line);
-            board_setup.push_str("\n");
-        }
-        boards.push(Board::from_str(&board_setup).unwrap());
-    }
+    let numbers = get_numbers(&input[0]);
+    let mut boards = build_boards(input);
 
     let mut winning_number = -1;
     for number in numbers {
@@ -181,12 +177,12 @@ mod tests {
     #[test]
     fn day4_part1_output() {
         let input = parse_input(&get_input());
-        assert_eq!(1025636, part1(&input));
+        assert_eq!(41668, part1(&input));
     }
 
     #[test]
     fn day4_part2_output() {
         let input = parse_input(&get_input());
-        assert_eq!(793873, part2(&input));
+        assert_eq!(10478, part2(&input));
     }
 }
