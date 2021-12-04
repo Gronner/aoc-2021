@@ -2,31 +2,23 @@ use std::str::FromStr;
 use aoc_downloader::download_day;
 use regex::Regex;
 
+use crate::utils::table::Table;
+
 const DAY: u32 = 4;
 type InputType = String;
 
 #[derive(Debug)]
 struct Board {
-    board: Vec<Vec<i32>>,
-    won: bool,
+    board: Table<i32>,
     winning_number: i32,
 }
 
 impl Board {
     pub fn get_score(&self) -> i32 {
-        let mut score = 0;
-        for row in &self.board {
-            for entry in row {
-                if -1 != *entry {
-                    score += *entry;
-                }
-            }
-        }
-        score 
-    }
-
-    pub fn has_won(&self) -> bool {
-        self.won
+        self.board.get_vector()
+            .iter()
+            .filter(|&entry| -1 != *entry)
+            .sum()
     }
 
     pub fn get_winning_number(&self) -> i32 {
@@ -36,44 +28,35 @@ impl Board {
     pub fn play_game(&mut self, number: i32) -> bool{
         self.mark_number(number);
         self.winning_number = number;
-        self.won = self.has_win();
-        self.won
+        self.has_won()
     }
-    
+
     fn mark_number(&mut self, number: i32) {
-        for row in self.board.iter_mut() {
-            for entry in row.iter_mut() {
-                if number == *entry {
-                    *entry = -1;
-                }
-            }
+        println!("{:?}", self.board);
+        let called_number = self.board.get_vetor_mut()
+            .iter_mut()
+            .find(|entry| number == **entry);
+        if called_number.is_some() {
+            *called_number.unwrap() = -1;
         }
     }
 
-    fn has_win(&self) -> bool {
+    pub fn has_won(&self) -> bool {
         self.check_row() || self.check_column()
     }
 
     fn check_row(&self) -> bool {
-        for row in &self.board {
-            if row.iter().all(|&value| -1 == value) {
-                return true;
-            }
-        }
-        false
+        self.board.get_rows()
+            .iter()
+            .any(|row| row.iter()
+                .all(|&value| -1 == value))
     }
 
     fn check_column(&self) -> bool {
-        for i in 0..self.board[0].len() {
-            let mut column = Vec::new();
-            for row in &self.board {
-                column.push(row[i]);
-            }
-            if column.iter().all(|&value| -1 == value) {
-                return true
-            }
-        }
-        false
+        self.board.get_columns()
+            .iter()
+            .any(|column| column.iter()
+                .all(|&value| -1 == value))
     }
 }
 
@@ -89,8 +72,7 @@ impl FromStr for Board {
             .map(|line| re.split(&line).map(|n| n.parse::<i32>().unwrap()).collect::<Vec<_>>())
             .collect::<Vec<_>>();
         Ok(Board {
-            board,
-            won: false,
+            board: Table::from_vecvec(board),
             winning_number: -1,
         })
     }
