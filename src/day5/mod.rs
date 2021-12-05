@@ -1,6 +1,5 @@
 use std::str::FromStr;
 use aoc_downloader::download_day;
-use num::signum;
 use regex::Regex;
 
 use crate::utils::{table::Table, coordinates::Vector};
@@ -49,7 +48,7 @@ pub fn run_day() {
 }
 
 fn part1(input: &Vec<InputType>) -> u32{
-    let mut seafloor = Table::from_vecvec(vec![vec![0; 1000]; 1000]);
+    let mut seafloor = Table::from_vecvec(vec![vec![0; 1000]; 1000]); // Determined by method of very sharp looking
     for line in input {
         let vector = (&line.start - &line.end).normalized();
         let mut current_pos = line.start.clone();
