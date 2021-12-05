@@ -112,7 +112,7 @@ mod tests {
     #[test]
     fn indexing_yields_ref_next_row() {
         let test_table = Table::from_vec(TESTDATA_ARR.to_vec(), (5, 5));
-        assert_eq!("17", test_table[(3, 3)]);
+        assert_eq!("19", test_table[(3, 3)]);
     }
 
     #[test]

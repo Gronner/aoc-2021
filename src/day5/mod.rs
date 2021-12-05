@@ -50,41 +50,45 @@ fn part1(input: &Vec<InputType>) -> u32{
     let mut seafloor = Table::from_vecvec(vec![vec![0; 1000]; 1000]);
     for line in input {
         let mut current_pos = line.start;
-        let vector = (-1 * num::signum(line.start.0 as isize - line.end.0 as isize),
-            -1 * num::signum(line.start.1 as isize - line.end.1 as isize));
-        if (vector.0 != 0) && (vector.1 != 0) {
+        let vector = compute_normal_vector(line.start, line.end);
+        if !include_diagonals(vector) {
             continue;
         }
         seafloor[current_pos] += 1;
-        loop {
-            current_pos = ((current_pos.0 as isize + vector.0) as usize,
-                (current_pos.1 as isize + vector.1) as usize);
+        while line.end != current_pos {
+            current_pos = next_position(current_pos, vector);
             seafloor[current_pos] += 1;
-            if line.end == current_pos {
-                break;
-            }
         }
     }
     seafloor.get_vector().iter().filter(|&n| 1 < *n).count() as u32
+}
+
+fn include_diagonals(vector: (isize, isize)) -> bool {
+    !((vector.0 != 0) && (vector.1 != 0))
 }
 
 fn part2(input: &Vec<InputType>) -> u32 {
     let mut seafloor = Table::from_vecvec(vec![vec![0; 1000]; 1000]);
     for line in input {
         let mut current_pos = line.start;
-        let vector = (-1 * num::signum(line.start.0 as isize - line.end.0 as isize),
-            -1 * num::signum(line.start.1 as isize - line.end.1 as isize));
+        let vector = compute_normal_vector(line.start, line.end);
         seafloor[current_pos] += 1;
-        loop {
-            current_pos = ((current_pos.0 as isize + vector.0) as usize,
-                (current_pos.1 as isize + vector.1) as usize);
+        while line.end != current_pos {
+            current_pos = next_position(current_pos, vector);
             seafloor[current_pos] += 1;
-            if line.end == current_pos {
-                break;
-            }
         }
     }
     seafloor.get_vector().iter().filter(|&n| 1 < *n).count() as u32
+}
+
+fn compute_normal_vector(start: (usize, usize), end: (usize, usize)) -> (isize, isize) {
+    (num::signum(end.0 as isize - start.0 as isize),
+    num::signum(end.1 as isize - start.1 as isize))
+}
+
+fn next_position(position: (usize, usize), vector: (isize, isize)) -> (usize, usize) {
+    ((position.0 as isize + vector.0) as usize,
+    (position.1 as isize + vector.1) as usize)
 }
 
 #[cfg(test)]
@@ -94,12 +98,12 @@ mod tests {
     #[test]
     fn day5_part1_output() {
         let input = parse_input(&get_input());
-        assert_eq!(41668, part1(&input));
+        assert_eq!(5145, part1(&input));
     }
 
     #[test]
     fn day5_part2_output() {
         let input = parse_input(&get_input());
-        assert_eq!(10478, part2(&input));
+        assert_eq!(16518, part2(&input));
     }
 }
