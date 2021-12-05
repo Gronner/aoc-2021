@@ -18,8 +18,10 @@ impl FromStr for Lines {
     type Err = std::num::ParseIntError;
     
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        let re: Regex = Regex::new(r"(\d+),(\d+) -> (\d+),(\d+)").unwrap();
-        Ok(re.captures(input).and_then(|captured| {
+        lazy_static!{
+            static ref RE: Regex = Regex::new(r"(\d+),(\d+) -> (\d+),(\d+)").unwrap();
+        }
+        Ok(RE.captures(input).and_then(|captured| {
             Some(Lines {
                 start: Vector::from((captured[1].parse::<usize>().unwrap(), captured[2].parse::<usize>().unwrap())),
                 end: Vector::from((captured[3].parse::<usize>().unwrap(), captured[4].parse::<usize>().unwrap())),

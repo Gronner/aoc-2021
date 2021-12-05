@@ -63,12 +63,14 @@ impl FromStr for Board {
     type Err = std::num::ParseIntError;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        let re = Regex::new(r" ").unwrap();
-        let re2 = Regex::new(r"\s+").unwrap();
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r" ").unwrap();
+            static ref RE2: Regex = Regex::new(r"\s+").unwrap();
+        }
         let board = input.lines()
             .filter(|line| "" != *line)
-            .map(|line| re2.replace_all(line.trim(), " "))
-            .map(|line| re.split(&line).map(|n| n.parse::<i32>().unwrap()).collect::<Vec<_>>())
+            .map(|line| RE2.replace_all(line.trim(), " "))
+            .map(|line| RE.split(&line).map(|n| n.parse::<i32>().unwrap()).collect::<Vec<_>>())
             .collect::<Vec<_>>();
         Ok(Board {
             board: Table::from_vecvec(board),

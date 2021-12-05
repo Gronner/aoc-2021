@@ -11,8 +11,10 @@ enum Operation {
 
 impl From<&String> for Operation {
     fn from(input: &String) -> Self {
-        let re = Regex::new(r"(.+) (\d)").unwrap();
-        re.captures(input).and_then(|captured| {
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"(.+) (\d)").unwrap();
+        }
+        RE.captures(input).and_then(|captured| {
             let value = captured[2].parse::<i32>().unwrap();
             match &captured[1] {
                 "forward" => Some(Operation::Forward(value)),
