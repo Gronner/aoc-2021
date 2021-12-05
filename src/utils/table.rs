@@ -1,4 +1,5 @@
 use std::ops::{Index, IndexMut};
+use crate::utils::coordinates::Vector;
 
 #[derive(Debug)]
 pub struct Table<T> {
@@ -80,6 +81,21 @@ impl<T: Copy> Index<(usize, usize)> for Table<T> {
 impl<T: Copy> IndexMut<(usize, usize)> for Table<T> {
     fn index_mut(&mut self, idx: (usize, usize)) -> &mut Self::Output {
         let idx = self.compute_idx(idx.0, idx.1);
+        &mut self.table[idx]
+    }
+}
+
+impl<T: Copy> Index<&Vector<usize>> for Table<T> {
+    type Output = T;
+
+    fn index(&self, idx: &Vector<usize>) -> &Self::Output {
+        &self.table[self.compute_idx(idx['x'], idx['y'])]
+    }
+}
+
+impl<T: Copy> IndexMut<&Vector<usize>> for Table<T> {
+    fn index_mut(&mut self, idx: &Vector<usize>) -> &mut Self::Output {
+        let idx = self.compute_idx(idx['x'], idx['y']);
         &mut self.table[idx]
     }
 }
