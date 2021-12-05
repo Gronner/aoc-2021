@@ -110,6 +110,12 @@ mod tests {
     }
 
     #[test]
+    fn indexing_yields_ref_next_row() {
+        let test_table = Table::from_vec(TESTDATA_ARR.to_vec(), (5, 5));
+        assert_eq!("17", test_table[(3, 3)]);
+    }
+
+    #[test]
     fn indexing_mut_enables_mutability() {
         let mut test_table = Table::from_vec(TESTDATA_ARR.to_vec(), (5, 5));
         assert_eq!("1", test_table[(0, 0)]);

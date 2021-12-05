@@ -32,7 +32,6 @@ impl Board {
     }
 
     fn mark_number(&mut self, number: i32) {
-        println!("{:?}", self.board);
         let called_number = self.board.get_vetor_mut()
             .iter_mut()
             .find(|entry| number == **entry);
