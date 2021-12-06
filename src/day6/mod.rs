@@ -26,21 +26,29 @@ pub fn run_day() {
 }
 
 fn part1(input: &Vec<InputType>) -> u32{
-    let mut zero_count = 0;
-    let mut fish = input.clone();
-    for i in 0..256 {
-        println!("{}", i);
-        fish = fish.iter()
-            .map(|&lf| if 0 == lf {zero_count += 1; 6 } else {lf - 1})
-            .collect::<Vec<_>>();
-        fish.append(&mut vec![8; zero_count]);
-        zero_count = 0;
+    let mut lifetime = vec![0; 9];
+    for fish in input {
+        lifetime[*fish as usize] += 1;
     }
-    fish.len() as u32
+    for i in 0..80{
+        println!("{}", i);
+        lifetime.rotate_left(1);
+        lifetime[6] += lifetime[8];
+    }
+    lifetime.iter().sum()
 }
 
-fn part2(input: &Vec<InputType>) -> u32 {
-    0
+fn part2(input: &Vec<InputType>) -> u64 {
+    let mut lifetime:Vec<u64> = vec![0; 9];
+    for fish in input {
+        lifetime[*fish as usize] += 1;
+    }
+    for i in 0..256 {
+        println!("{}", i);
+        lifetime.rotate_left(1);
+        lifetime[6] += lifetime[8];
+    }
+    lifetime.iter().sum()
 }
 
 #[cfg(test)]
