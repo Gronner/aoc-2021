@@ -31,7 +31,6 @@ fn part1(input: &Vec<InputType>) -> u32{
         lifetime[*fish as usize] += 1;
     }
     for i in 0..80{
-        println!("{}", i);
         lifetime.rotate_left(1);
         lifetime[6] += lifetime[8];
     }
@@ -44,7 +43,6 @@ fn part2(input: &Vec<InputType>) -> u64 {
         lifetime[*fish as usize] += 1;
     }
     for i in 0..256 {
-        println!("{}", i);
         lifetime.rotate_left(1);
         lifetime[6] += lifetime[8];
     }
@@ -58,12 +56,12 @@ mod tests {
     #[test]
     fn day6_part1_output() {
         let input = parse_input(&get_input());
-        assert_eq!(5145, part1(&input));
+        assert_eq!(359999, part1(&input));
     }
 
     #[test]
     fn day6_part2_output() {
         let input = parse_input(&get_input());
-        assert_eq!(16518, part2(&input));
+        assert_eq!(1631647919273, part2(&input));
     }
 }
