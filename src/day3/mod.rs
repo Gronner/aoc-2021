@@ -25,7 +25,7 @@ fn bit_is_set(num: u32, bit: usize) -> bool {
     0 != (num & (1 << bit))
 }
 
-fn part1(input: &Vec<InputType>) -> u32{
+fn part1(input: &Vec<InputType>) -> u32 {
     let num_len = u32::BITS as usize;
     let mut gamma = vec![0; num_len];
     for num in input {
@@ -42,7 +42,7 @@ fn part1(input: &Vec<InputType>) -> u32{
         }
     }
     let mask = 0b111111111111; // Determined by method of very sharp looking
-    (!gamma_val & mask) * gamma_val
+    (gamma_val ^ mask) * gamma_val
 }
 
 fn part2(numbers: &Vec<InputType>) -> u32 {

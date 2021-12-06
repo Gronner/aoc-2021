@@ -1,0 +1,61 @@
+use aoc_downloader::download_day;
+use par_map::ParMap;
+
+const DAY: u32 = 6;
+type InputType = u32;
+
+fn get_input() -> String {
+    download_day((DAY) as u32, "input").unwrap();
+    std::fs::read_to_string(format!("input/input{}.txt", DAY)).unwrap()
+}
+
+fn parse_input(input: &str) -> Vec<InputType> {
+    let len = input.len();
+    let mut input = input.to_owned();
+    input.truncate(len - 1);
+    input
+        .split(',')
+        .map(|s| s.parse::<u32>().unwrap())
+        .collect::<Vec<_>>()
+}
+
+pub fn run_day() {
+    let input = get_input();
+    let input = parse_input(&input);
+    println!("Running day {}:\n\tPart1 {}\n\tPart2 {}", DAY, part1(&input), part2(&input));
+}
+
+fn part1(input: &Vec<InputType>) -> u32{
+    let mut zero_count = 0;
+    let mut fish = input.clone();
+    for i in 0..256 {
+        println!("{}", i);
+        fish = fish.iter()
+            .map(|&lf| if 0 == lf {zero_count += 1; 6 } else {lf - 1})
+            .collect::<Vec<_>>();
+        fish.append(&mut vec![8; zero_count]);
+        zero_count = 0;
+    }
+    fish.len() as u32
+}
+
+fn part2(input: &Vec<InputType>) -> u32 {
+    0
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn day6_part1_output() {
+        let input = parse_input(&get_input());
+        assert_eq!(5145, part1(&input));
+    }
+
+    #[test]
+    fn day6_part2_output() {
+        let input = parse_input(&get_input());
+        assert_eq!(16518, part2(&input));
+    }
+}

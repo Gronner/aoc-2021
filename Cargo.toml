@@ -10,4 +10,5 @@ aoc-downloader = { git = "https://github.com/Gronner/aoc-downloader" }
 const_format = "0.2.22"
 lazy_static = "1.4.0"
 num = "0.4.0"
+par-map = "0.1.4"
 regex = "1"
