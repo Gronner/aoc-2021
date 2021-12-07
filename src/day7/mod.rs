@@ -34,27 +34,16 @@ fn part1(input: &Vec<InputType>) -> i32{
 }
 
 fn part2(input: &Vec<InputType>) -> i32 {
-    let len = input.len();
     let max_pos = input.iter().max().unwrap();
     let min_pos = input.iter().min().unwrap();
 
-    let mut moveses: Vec<Vec<i32>> = vec![vec![0; (max_pos - min_pos + 1) as usize]; len];
-
-    for (idx, crab) in input.iter().enumerate() {
-        for distance in *min_pos..=*max_pos {
-            let offset = (crab - distance).abs();
-            let mut fuel = 0;
-            for i in 1..=offset {
-                fuel += i;
-            }
-            moveses[idx][(distance - min_pos) as usize] = fuel;
-        }
-    }
     let mut fewest_fuel = i32::MAX;
     for distance in *min_pos..=*max_pos {
         let mut total_fuel = 0;
-        for (idx, _) in input.iter().enumerate() {
-            total_fuel += moveses[idx][(distance - min_pos) as usize]
+        for crab in input {
+            let offset = (crab - distance).abs();
+            let fuel = offset * (offset + 1) / 2;
+            total_fuel += fuel;
         }
         if total_fuel < fewest_fuel {
             fewest_fuel = total_fuel;
@@ -70,12 +59,12 @@ mod tests {
     #[test]
     fn day7_part1_output() {
         let input = parse_input(&get_input());
-        assert_eq!(359999, part1(&input));
+        assert_eq!(342534, part1(&input));
     }
 
     #[test]
     fn day7_part2_output() {
         let input = parse_input(&get_input());
-        assert_eq!(1631647919273, part2(&input));
+        assert_eq!(94004208, part2(&input));
     }
 }
