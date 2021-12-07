@@ -1,8 +1,7 @@
 use aoc_downloader::download_day;
-use par_map::ParMap;
 
 const DAY: u32 = 7;
-type InputType = String;
+type InputType = i32;
 
 fn get_input() -> String {
     download_day((DAY) as u32, "input").unwrap();
@@ -11,8 +10,11 @@ fn get_input() -> String {
 
 fn parse_input(input: &str) -> Vec<InputType> {
     let len = input.len();
-    input.iter()
-        .map(|s| s.to_owned())
+    let mut input = input.to_owned();
+    input.truncate(len - 1);
+    input
+        .split(',')
+        .map(|s| s.parse::<i32>().unwrap())
         .collect::<Vec<_>>()
 }
 
@@ -22,12 +24,43 @@ pub fn run_day() {
     println!("Running day {}:\n\tPart1 {}\n\tPart2 {}", DAY, part1(&input), part2(&input));
 }
 
-fn part1(input: &Vec<InputType>) -> u32{
-    0
+fn part1(input: &Vec<InputType>) -> i32{
+    let len = input.len();
+    let mut median = input.clone();
+    median.sort();
+    let median = median[len / 2];
+
+    input.iter().map(|&crab: &i32| (median - crab).abs()).collect::<Vec<i32>>().iter().sum::<i32>()
 }
 
-fn part2(input: &Vec<InputType>) -> u64 {
-    0
+fn part2(input: &Vec<InputType>) -> i32 {
+    let len = input.len();
+    let max_pos = input.iter().max().unwrap();
+    let min_pos = input.iter().min().unwrap();
+
+    let mut moveses: Vec<Vec<i32>> = vec![vec![0; (max_pos - min_pos + 1) as usize]; len];
+
+    for (idx, crab) in input.iter().enumerate() {
+        for distance in *min_pos..=*max_pos {
+            let offset = (crab - distance).abs();
+            let mut fuel = 0;
+            for i in 1..=offset {
+                fuel += i;
+            }
+            moveses[idx][(distance - min_pos) as usize] = fuel;
+        }
+    }
+    let mut fewest_fuel = i32::MAX;
+    for distance in *min_pos..=*max_pos {
+        let mut total_fuel = 0;
+        for (idx, _) in input.iter().enumerate() {
+            total_fuel += moveses[idx][(distance - min_pos) as usize]
+        }
+        if total_fuel < fewest_fuel {
+            fewest_fuel = total_fuel;
+        }
+    }
+    fewest_fuel
 }
 
 #[cfg(test)]

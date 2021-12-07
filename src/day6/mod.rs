@@ -1,5 +1,4 @@
 use aoc_downloader::download_day;
-use par_map::ParMap;
 
 const DAY: u32 = 6;
 type InputType = u32;
@@ -30,7 +29,7 @@ fn part1(input: &Vec<InputType>) -> u32{
     for fish in input {
         lifetime[*fish as usize] += 1;
     }
-    for i in 0..80{
+    for _ in 0..80{
         lifetime.rotate_left(1);
         lifetime[6] += lifetime[8];
     }
@@ -42,7 +41,7 @@ fn part2(input: &Vec<InputType>) -> u64 {
     for fish in input {
         lifetime[*fish as usize] += 1;
     }
-    for i in 0..256 {
+    for _ in 0..256 {
         lifetime.rotate_left(1);
         lifetime[6] += lifetime[8];
     }
