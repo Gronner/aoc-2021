@@ -30,7 +30,9 @@ fn part1(input: &Vec<InputType>) -> i32{
     median.sort();
     let median = median[len / 2];
 
-    input.iter().map(|&crab: &i32| (median - crab).abs()).collect::<Vec<i32>>().iter().sum::<i32>()
+    input.iter()
+        .map(|&crab: &i32| (median - crab).abs())
+        .sum::<i32>()
 }
 
 fn part2(input: &Vec<InputType>) -> i32 {
