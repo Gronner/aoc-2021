@@ -44,12 +44,9 @@ fn part2(input: &Vec<InputType>) -> i32 {
         let mut total_fuel = 0;
         for crab in input {
             let offset = (crab - distance).abs();
-            let fuel = offset * (offset + 1) / 2;
-            total_fuel += fuel;
+            total_fuel += offset * (offset + 1) / 2;
         }
-        if total_fuel < fewest_fuel {
-            fewest_fuel = total_fuel;
-        }
+        fewest_fuel = std::cmp::min(total_fuel, fewest_fuel);
     }
     fewest_fuel
 }
