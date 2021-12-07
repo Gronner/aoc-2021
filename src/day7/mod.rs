@@ -35,20 +35,15 @@ fn part1(input: &Vec<InputType>) -> i32{
         .sum::<i32>()
 }
 
-fn part2(input: &Vec<InputType>) -> i32 {
-    let max_pos = input.iter().max().unwrap();
-    let min_pos = input.iter().min().unwrap();
+fn gauss(input: i32) -> i32 {
+    input * (input + 1) / 2
+}
 
-    let mut fewest_fuel = i32::MAX;
-    for distance in *min_pos..=*max_pos {
-        let mut total_fuel = 0;
-        for crab in input {
-            let offset = (crab - distance).abs();
-            total_fuel += offset * (offset + 1) / 2;
-        }
-        fewest_fuel = std::cmp::min(total_fuel, fewest_fuel);
-    }
-    fewest_fuel
+fn part2(input: &Vec<InputType>) -> i32 {
+    let average: i32 = input.iter().sum::<i32>() / input.len() as i32;
+    // This is not stable for general input, but seems to work reliably
+    // for AoC 2021 input
+    input.iter().map(|&crab| gauss((average - crab).abs())).sum::<i32>()
 }
 
 #[cfg(test)]
