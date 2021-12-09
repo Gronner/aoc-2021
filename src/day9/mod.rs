@@ -78,7 +78,6 @@ fn depth_search(minimum: (usize, usize), map: &Vec<InputType>) -> u32 {
             }
             visited.insert(current);
 
-            println!("{:?}", current);
             let value = map[current.1][current.0];
             if value != 9 {
                 part += 1;
@@ -98,7 +97,6 @@ fn part2(input: &Vec<InputType>) -> u32 {
     let minima = get_mimima(input);
 
     let mut sizes = Vec::new();
-    println!("{:?}", minima);
     for minimum in minima {
         sizes.push(depth_search(minimum, &input));
     }
