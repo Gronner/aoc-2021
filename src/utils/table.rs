@@ -57,6 +57,14 @@ impl<T: Copy> Table<T> {
         }
     }
 
+    pub fn get_row_count(&self) -> usize {
+        self.rows
+    }
+
+    pub fn get_column_count(&self) -> usize {
+        self.columns
+    }
+
     pub fn from_vecvec(vecvec: Vec<Vec<T>>) -> Self {
         let mut vector = Vec::new();
         for vec in &vecvec {
