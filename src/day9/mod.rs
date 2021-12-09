@@ -1,6 +1,5 @@
 use aoc_downloader::download_day;
 use std::collections::HashSet;
-use crate::utils::table::Table;
 
 const DAY: u32 = 9;
 type InputType = Vec<u32>;
@@ -45,15 +44,24 @@ fn get_neighbours(current_pos: (usize, usize), input: &Vec<InputType>) -> Vec<(u
     neighbours
 }
 
-fn part1(input: &Vec<InputType>) -> u32{
-    let mut risk_level = 0;
+fn get_mimima(input: &Vec<InputType>) -> Vec<(usize, usize)> {
+    let mut minima = Vec::new();
     for (y, row) in input.iter().enumerate() {
         for (x, element) in row.iter().enumerate() {
             let neighbours = get_neighbours((x, y), &input);
             if neighbours.iter().all(|v| input[v.1][v.0] > *element) {
-                risk_level += element + 1;
+                minima.push((x, y));
             }
         }
+    }
+    minima
+}
+
+fn part1(input: &Vec<InputType>) -> u32{
+    let minima = get_mimima(input);
+    let mut risk_level = 0;
+    for minimum in minima {
+        risk_level += input[minimum.1][minimum.0] + 1;
     }
     risk_level
 }
@@ -87,18 +95,7 @@ fn depth_search(minimum: (usize, usize), map: &Vec<InputType>) -> u32 {
 }
 
 fn part2(input: &Vec<InputType>) -> u32 {
-    let mut minima = Vec::new();
-
-    println!("{:?}", input);
-
-    for (y, row) in input.iter().enumerate() {
-        for (x, element) in row.iter().enumerate() {
-            let neighbours = get_neighbours((x, y), &input);
-            if neighbours.iter().all(|v| input[v.1][v.0] > *element) {
-                minima.push((x, y));
-            }
-        }
-    }
+    let minima = get_mimima(input);
 
     let mut sizes = Vec::new();
     println!("{:?}", minima);
@@ -119,12 +116,12 @@ mod tests {
     #[test]
     fn day9_part1_output() {
         let input = parse_input(&get_input());
-        assert_eq!(342, part1(&input));
+        assert_eq!(425, part1(&input));
     }
 
     #[test]
     fn day9_part2_output() {
         let input = parse_input(&get_input());
-        assert_eq!(1068933, part2(&input));
+        assert_eq!(1135260, part2(&input));
     }
 }
