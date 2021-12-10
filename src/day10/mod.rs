@@ -20,7 +20,7 @@ pub fn run_day() {
     println!("Running day {}:\n\tPart1 {}\n\tPart2 {}", DAY, part1(&input), part2(&input));
 }
 
-fn compute_score(error: char) -> u32 {
+fn compute_error_score(error: char) -> u32 {
     match error {
         ')' => 3,
         ']' => 57,
@@ -30,57 +30,72 @@ fn compute_score(error: char) -> u32 {
     }
 }
 
+fn compute_correction_score(correction: char) -> u64 {
+    match correction {
+        '[' => 2,
+        '(' => 1,
+        '{' => 3,
+        '<' => 4,
+        _ => 0,
+    }
+}
+
+enum ParsingError {
+    UnclosedParenthesis(char),
+    UnexpectedToken(char),
+}
+
+fn parse_line(line: &String) -> Result<Vec<char>, ParsingError> {
+    let mut stack = Vec::new();
+    for c in line.chars() {
+        match c {
+            '(' => stack.push(c),
+            ')' => {
+                if let Some(poped) = stack.pop() {
+                    if poped != '(' {
+                        return Err(ParsingError::UnclosedParenthesis(c));
+                    }
+                }
+            },
+            '[' => stack.push(c),
+            ']' => {
+                if let Some(poped) = stack.pop() {
+                    if poped != '[' {
+                        return Err(ParsingError::UnclosedParenthesis(c));
+                    }
+                }
+            },
+            '{' => stack.push(c),
+            '}' => {
+                if let Some(poped) = stack.pop() {
+                    if poped != '{' {
+                        return Err(ParsingError::UnclosedParenthesis(c));
+                    }
+                }
+            },
+            '<' => stack.push(c),
+            '>' => {
+                if let Some(poped) = stack.pop() {
+                    if poped != '<' {
+                        return Err(ParsingError::UnclosedParenthesis(c));
+                    }
+                };
+            },
+            _ => return Err(ParsingError::UnexpectedToken(c)),
+        }
+    }
+    Ok(stack)
+}
+
 fn part1(input: &Vec<InputType>) -> u32{
     let mut high_score = 0;
     for line in input {
-        let mut stack = Vec::new();
-        let mut round_score = 0;
-        for c in line.chars() {
-            match c {
-                '(' => stack.push(c),
-                ')' => {
-                    if let Some(poped) = stack.pop() {
-                        if poped != '(' {
-                            round_score = compute_score(c);
-                            break;
-                        }
-                    }
-                },
-                '[' => stack.push(c),
-                ']' => {
-                    if let Some(poped) = stack.pop() {
-                        if poped != '[' {
-                            round_score = compute_score(c);
-                            break;
-                        }
-                    }
-                },
-                '{' => stack.push(c),
-                '}' => {
-                    if let Some(poped) = stack.pop() {
-                        if poped != '{' {
-                            round_score = compute_score(c);
-                            break;
-                        }
-                    }
-                },
-                '<' => stack.push(c),
-                '>' => {
-                    if let Some(poped) = stack.pop() {
-                        if poped != '<' {
-                            round_score = compute_score(c);
-                            break;
-                        }
-                    };
-                },
-                _ => (),
-            }
-        }
-        if !stack.is_empty() {
-            high_score += round_score;
+        match parse_line(line) {
+            Err(ParsingError::UnclosedParenthesis(c)) => high_score += compute_error_score(c),
+            Err(ParsingError::UnexpectedToken(c)) => panic!("Unexpected Token encountered: {}", c),
+            Ok(_) => (),
         }
     }
-
     high_score
 }
 
@@ -179,13 +194,7 @@ fn part2(input: &Vec<InputType>) -> u64 {
         for c in stack.iter().rev() {
             print!("{}", c);
             line_score *= 5;
-            line_score += match c {
-                '[' => 2,
-                '(' => 1,
-                '{' => 3,
-                '<' => 4,
-                _ => 0,
-            }
+            line_score += compute_correction_score(*c);
         }
         println!("{}", line_score);
         line_scores.push(line_score);
@@ -202,12 +211,12 @@ mod tests {
     #[test]
     fn day10_part1_output() {
         let input = parse_input(&get_input());
-        assert_eq!(425, part1(&input));
+        assert_eq!(392043, part1(&input));
     }
 
     #[test]
     fn day10_part2_output() {
         let input = parse_input(&get_input());
-        assert_eq!(1135260, part2(&input));
+        assert_eq!(1605968119, part2(&input));
     }
 }
