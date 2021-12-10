@@ -49,7 +49,7 @@ fn parse_line(line: &String) -> Result<Vec<char>, ParsingError> {
     let mut stack = Vec::new();
     for c in line.chars() {
         match c {
-            '(' => stack.push(c),
+            '(' | '[' | '{' | '<' => stack.push(c),
             ')' => {
                 if let Some(poped) = stack.pop() {
                     if poped != '(' {
@@ -57,7 +57,6 @@ fn parse_line(line: &String) -> Result<Vec<char>, ParsingError> {
                     }
                 }
             },
-            '[' => stack.push(c),
             ']' => {
                 if let Some(poped) = stack.pop() {
                     if poped != '[' {
@@ -65,7 +64,6 @@ fn parse_line(line: &String) -> Result<Vec<char>, ParsingError> {
                     }
                 }
             },
-            '{' => stack.push(c),
             '}' => {
                 if let Some(poped) = stack.pop() {
                     if poped != '{' {
@@ -73,7 +71,6 @@ fn parse_line(line: &String) -> Result<Vec<char>, ParsingError> {
                     }
                 }
             },
-            '<' => stack.push(c),
             '>' => {
                 if let Some(poped) = stack.pop() {
                     if poped != '<' {
