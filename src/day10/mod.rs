@@ -51,29 +51,29 @@ fn parse_line(line: &String) -> Result<Vec<char>, ParsingError> {
         match c {
             '(' | '[' | '{' | '<' => stack.push(c),
             ')' => {
-                if let Some(poped) = stack.pop() {
-                    if poped != '(' {
+                if let Some(popped) = stack.pop() {
+                    if popped != '(' {
                         return Err(ParsingError::UnclosedParenthesis(c));
                     }
                 }
             },
             ']' => {
-                if let Some(poped) = stack.pop() {
-                    if poped != '[' {
+                if let Some(popped) = stack.pop() {
+                    if popped != '[' {
                         return Err(ParsingError::UnclosedParenthesis(c));
                     }
                 }
             },
             '}' => {
-                if let Some(poped) = stack.pop() {
-                    if poped != '{' {
+                if let Some(popped) = stack.pop() {
+                    if popped != '{' {
                         return Err(ParsingError::UnclosedParenthesis(c));
                     }
                 }
             },
             '>' => {
-                if let Some(poped) = stack.pop() {
-                    if poped != '<' {
+                if let Some(popped) = stack.pop() {
+                    if popped != '<' {
                         return Err(ParsingError::UnclosedParenthesis(c));
                     }
                 };
@@ -97,16 +97,12 @@ fn part1(input: &Vec<InputType>) -> u32{
 }
 
 fn part2(input: &Vec<InputType>) -> u64 {
-    let mut incomplete = input.clone();
     let mut stacks = Vec::new();
     for line in input {
         match parse_line(line) {
             Err(ParsingError::UnclosedParenthesis(_)) => (),
             Err(ParsingError::UnexpectedToken(c)) => panic!("Unexpected Token encountered: {}", c),
-            Ok(stack) => {
-                incomplete.push(line.clone());
-                stacks.push(stack);
-            },
+            Ok(stack) => stacks.push(stack),
         }
     }
 
