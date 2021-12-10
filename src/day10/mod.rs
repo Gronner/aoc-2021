@@ -101,102 +101,25 @@ fn part1(input: &Vec<InputType>) -> u32{
 
 fn part2(input: &Vec<InputType>) -> u64 {
     let mut incomplete = input.clone();
+    let mut stacks = Vec::new();
     for line in input {
-        let mut stack = Vec::new();
-        for c in line.chars() {
-            match c {
-                '(' => stack.push(c),
-                ')' => {
-                    if let Some(poped) = stack.pop() {
-                        if poped != '(' {
-                            let idx = incomplete.iter().position(|l| l == line).unwrap();
-                            incomplete.remove(idx);
-                            break;
-                        }
-                    }
-                },
-                '[' => stack.push(c),
-                ']' => {
-                    if let Some(poped) = stack.pop() {
-                        if poped != '[' {
-                            let idx = incomplete.iter().position(|l| l == line).unwrap();
-                            incomplete.remove(idx);
-                            break;
-                        }
-                    }
-                },
-                '{' => stack.push(c),
-                '}' => {
-                    if let Some(poped) = stack.pop() {
-                        if poped != '{' {
-                            let idx = incomplete.iter().position(|l| l == line).unwrap();
-                            incomplete.remove(idx);
-                            break;
-                        }
-                    }
-                },
-                '<' => stack.push(c),
-                '>' => {
-                    if let Some(poped) = stack.pop() {
-                        if poped != '<' {
-                            let idx = incomplete.iter().position(|l| l == line).unwrap();
-                            incomplete.remove(idx);
-                            break;
-                        }
-                    };
-                },
-                _ => (),
-            }
+        match parse_line(line) {
+            Err(ParsingError::UnclosedParenthesis(_)) => (),
+            Err(ParsingError::UnexpectedToken(c)) => panic!("Unexpected Token encountered: {}", c),
+            Ok(stack) => {
+                incomplete.push(line.clone());
+                stacks.push(stack);
+            },
         }
     }
 
     let mut line_scores = Vec::new();
-    for line in incomplete {
-        let mut stack = Vec::new();
-        for c in line.chars() {
-            match c {
-                '(' => stack.push(c),
-                ')' => {
-                    if let Some(poped) = stack.pop() {
-                        if poped != '(' {
-                            stack.push(poped);
-                        }
-                    }
-                },
-                '[' => stack.push(c),
-                ']' => {
-                    if let Some(poped) = stack.pop() {
-                        if poped != '[' {
-                            stack.push(poped);
-                        }
-                    }
-                },
-                '{' => stack.push(c),
-                '}' => {
-                    if let Some(poped) = stack.pop() {
-                        if poped != '{' {
-                            stack.push(poped);
-                        }
-                    }
-                },
-                '<' => stack.push(c),
-                '>' => {
-                    if let Some(poped) = stack.pop() {
-                        if poped != '<' {
-                            stack.push(poped);
-                        }
-                    };
-                },
-                _ => (),
-            }
-        }
+    for stack in stacks {
         let mut line_score: u64 = 0;
         for c in stack.iter().rev() {
-            print!("{}", c);
             line_score *= 5;
             line_score += compute_correction_score(*c);
         }
-        println!("{}", line_score);
         line_scores.push(line_score);
     } 
     let len = line_scores.len();
