@@ -17,7 +17,7 @@ fn parse_input(input: &str) -> Vec<InputType> {
 pub fn run_day() {
     let input = get_input();
     let input = parse_input(&input);
-    println!("Running day {}:\n\tPart1 {}\n\tPart2 {}", DAY, part1(&input), part2(&input));
+    println!("Running day {}:\n\tPart2 {}\n\tPart2 {}", DAY, part1(&input), part2(&input));
 }
 
 fn compute_error_score(error: char) -> u32 {
@@ -32,11 +32,18 @@ fn compute_error_score(error: char) -> u32 {
 
 fn compute_correction_score(correction: char) -> u64 {
     match correction {
-        '[' => 2,
         '(' => 1,
+        '[' => 2,
         '{' => 3,
         '<' => 4,
         _ => 0,
+    }
+}
+
+fn is_matching(current: char, last: char) -> bool {
+    match (last, current) {
+        ('(', ')') | ('[', ']') | ('{', '}') | ('<', '>') => true,
+        (_, _) => false,
     }
 }
 
@@ -50,33 +57,12 @@ fn parse_line(line: &String) -> Result<Vec<char>, ParsingError> {
     for c in line.chars() {
         match c {
             '(' | '[' | '{' | '<' => stack.push(c),
-            ')' => {
+            ')' | ']' | '}' | '>' => {
                 if let Some(popped) = stack.pop() {
-                    if popped != '(' {
+                    if !is_matching(c, popped) {
                         return Err(ParsingError::UnclosedParenthesis(c));
                     }
                 }
-            },
-            ']' => {
-                if let Some(popped) = stack.pop() {
-                    if popped != '[' {
-                        return Err(ParsingError::UnclosedParenthesis(c));
-                    }
-                }
-            },
-            '}' => {
-                if let Some(popped) = stack.pop() {
-                    if popped != '{' {
-                        return Err(ParsingError::UnclosedParenthesis(c));
-                    }
-                }
-            },
-            '>' => {
-                if let Some(popped) = stack.pop() {
-                    if popped != '<' {
-                        return Err(ParsingError::UnclosedParenthesis(c));
-                    }
-                };
             },
             _ => return Err(ParsingError::UnexpectedToken(c)),
         }
@@ -106,17 +92,12 @@ fn part2(input: &Vec<InputType>) -> u64 {
         }
     }
 
-    let mut line_scores = Vec::new();
-    for stack in stacks {
-        let mut line_score: u64 = 0;
-        for c in stack.iter().rev() {
-            line_score *= 5;
-            line_score += compute_correction_score(*c);
-        }
-        line_scores.push(line_score);
-    } 
-    let len = line_scores.len();
+    let mut line_scores: Vec<u64> = stacks.iter()
+        .map(|stack| { stack.iter().rev()
+            .fold(0, |line_score , &c|  { line_score * 5 + compute_correction_score(c) })})
+        .collect();
     line_scores.sort();
+    let len = line_scores.len();
     line_scores[len / 2]
 }
 
