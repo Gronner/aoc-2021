@@ -20,7 +20,7 @@ pub fn run_day() {
     println!("Running day {}:\n\tPart2 {}\n\tPart2 {}", DAY, part1(&input), part2(&input));
 }
 
-fn compute_error_score(error: char) -> u32 {
+fn compute_error_score(error: char) -> u64 {
     match error {
         ')' => 3,
         ']' => 57,
@@ -70,28 +70,27 @@ fn parse_line(line: &String) -> Result<Vec<char>, ParsingError> {
     Ok(stack)
 }
 
-fn part1(input: &Vec<InputType>) -> u32{
-    let mut high_score = 0;
-    for line in input {
-        match parse_line(line) {
-            Err(ParsingError::UnclosedParenthesis(c)) => high_score += compute_error_score(c),
-            Err(ParsingError::UnexpectedToken(c)) => panic!("Unexpected Token encountered: {}", c),
-            Ok(_) => (),
-        }
-    }
-    high_score
-}
-
-fn part2(input: &Vec<InputType>) -> u64 {
+fn parse_lines(input: &Vec<InputType>) -> (u64, Vec<Vec<char>>) {
+    let mut high_score: u64 = 0;
     let mut stacks = Vec::new();
     for line in input {
         match parse_line(line) {
-            Err(ParsingError::UnclosedParenthesis(_)) => (),
+            Err(ParsingError::UnclosedParenthesis(c)) => high_score += compute_error_score(c),
             Err(ParsingError::UnexpectedToken(c)) => panic!("Unexpected Token encountered: {}", c),
             Ok(stack) => stacks.push(stack),
         }
     }
 
+    (high_score, stacks)
+}
+
+fn part1(input: &Vec<InputType>) -> u64 {
+    let (high_score, _) = parse_lines(input);
+    high_score
+}
+
+fn part2(input: &Vec<InputType>) -> u64 {
+    let (_, stacks) = parse_lines(input);
     let mut line_scores: Vec<u64> = stacks.iter()
         .map(|stack| { stack.iter().rev()
             .fold(0, |line_score , &c|  { line_score * 5 + compute_correction_score(c) })})
