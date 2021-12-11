@@ -2,7 +2,7 @@ use aoc_downloader::download_day;
 
 const DAY: u32 = 11;
 type InputType = Vec<u32>;
-type Coordiantes = (usize, usize);
+type Coordinate = (usize, usize);
 
 fn get_input() -> String {
     download_day((DAY) as u32, "input").unwrap();
@@ -23,7 +23,7 @@ pub fn run_day() {
     println!("Running day {}:\n\tPart2 {}\n\tPart2 {}", DAY, part1(&input), part2(&input));
 }
 
-fn get_neighbours(current_pos: Coordiantes, input: &Vec<InputType>) -> Vec<Coordiantes> {
+fn get_neighbours(current_pos: Coordinate, input: &Vec<InputType>) -> Vec<Coordinate> {
     lazy_static!{
         static ref OFFSETS: Vec<(isize, isize)> = vec![
             (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)
@@ -44,7 +44,7 @@ fn get_neighbours(current_pos: Coordiantes, input: &Vec<InputType>) -> Vec<Coord
     neighbours
 }
 
-fn find_initial_flashers(input: &mut Vec<InputType>) -> Vec<Coordiantes> {
+fn find_initial_flashers(input: &mut Vec<InputType>) -> Vec<Coordinate> {
     let mut flashers = Vec::new();
     for (y, row) in input.clone().iter().enumerate() {
         for (x, _) in row.iter().enumerate() {
@@ -57,7 +57,7 @@ fn find_initial_flashers(input: &mut Vec<InputType>) -> Vec<Coordiantes> {
     flashers
 }
 
-fn get_all_flashers_this_cycle(input: &mut Vec<InputType>, flashers: &mut Vec<Coordiantes>) -> Vec<Coordiantes> {
+fn get_all_flashers_this_cycle(input: &mut Vec<InputType>, flashers: &mut Vec<Coordinate>) -> Vec<Coordinate> {
     let mut flashed = Vec::new();
     while let Some(flasher) = flashers.pop() {
         let neighbours = get_neighbours(flasher, &input);
