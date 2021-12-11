@@ -2,6 +2,7 @@ use aoc_downloader::download_day;
 
 const DAY: u32 = 11;
 type InputType = Vec<u32>;
+type Coordiantes = (usize, usize);
 
 fn get_input() -> String {
     download_day((DAY) as u32, "input").unwrap();
@@ -22,7 +23,7 @@ pub fn run_day() {
     println!("Running day {}:\n\tPart2 {}\n\tPart2 {}", DAY, part1(&input), part2(&input));
 }
 
-fn get_neighbours(current_pos: (usize, usize), input: &Vec<InputType>) -> Vec<(usize, usize)> {
+fn get_neighbours(current_pos: Coordiantes, input: &Vec<InputType>) -> Vec<Coordiantes> {
     lazy_static!{
         static ref OFFSETS: Vec<(isize, isize)> = vec![
             (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)
@@ -43,48 +44,52 @@ fn get_neighbours(current_pos: (usize, usize), input: &Vec<InputType>) -> Vec<(u
     neighbours
 }
 
-fn part1(input: &Vec<InputType>) -> u64 {
-    let mut input = input.clone();
-    let mut flashes = 0;
-    let rounds = 100;
-    for _ in 0..rounds {
-        let (flashes_this_cycle, _) = cycle_of_life(&mut input);
-        flashes += flashes_this_cycle;
-    }
-    flashes
-}
-
-fn cycle_of_life(input: &mut Vec<InputType>) -> (u64, usize) {
-    let mut flashes = 0;
+fn find_initial_flashers(input: &mut Vec<InputType>) -> Vec<Coordiantes> {
     let mut flashers = Vec::new();
     for (y, row) in input.clone().iter().enumerate() {
         for (x, _) in row.iter().enumerate() {
             input[y][x] += 1;
             if input[y][x] > 9 {
                 flashers.push((y, x));
-                flashes += 1;
             }
         }
     }
+    flashers
+}
 
+fn get_all_flashers_this_cycle(input: &mut Vec<InputType>, flashers: &mut Vec<Coordiantes>) -> Vec<Coordiantes> {
     let mut flashed = Vec::new();
-    while !flashers.is_empty() {
-        let flasher = flashers.pop().unwrap();
+    while let Some(flasher) = flashers.pop() {
         let neighbours = get_neighbours(flasher, &input);
         for neighbour in neighbours {
             input[neighbour.0][neighbour.1] += 1;
             if input[neighbour.0][neighbour.1] == 10 {
                 flashers.push(neighbour);
-                flashes += 1;
             }
         }
         flashed.push(flasher);
     }
+    flashed
+}
+
+fn cycle_of_life(input: &mut Vec<InputType>) -> usize {
+    let mut flashers = find_initial_flashers(input);
+    let flashed = get_all_flashers_this_cycle(input, &mut flashers);
 
     for flasher in &flashed {
         input[flasher.0][flasher.1] = 0;
     }
-    (flashes, flashed.len())
+    flashed.len()
+}
+
+fn part1(input: &Vec<InputType>) -> usize {
+    let mut input = input.clone();
+    let mut flashes = 0;
+    let rounds = 100;
+    for _ in 0..rounds {
+        flashes += cycle_of_life(&mut input);
+    }
+    flashes
 }
 
 fn part2(input: &Vec<InputType>) -> u64 {
@@ -92,7 +97,7 @@ fn part2(input: &Vec<InputType>) -> u64 {
     let octopuses_max = input.len() * input[0].len();
     let mut rounds = 0;
     loop {
-        let (_, flashed_this_cycle) = cycle_of_life(&mut input);
+        let flashed_this_cycle = cycle_of_life(&mut input);
         rounds += 1;
         if octopuses_max == flashed_this_cycle {
             break;
