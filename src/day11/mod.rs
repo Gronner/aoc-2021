@@ -48,36 +48,43 @@ fn part1(input: &Vec<InputType>) -> u64 {
     let mut flashes = 0;
     let rounds = 100;
     for _ in 0..rounds {
-        let mut flashers = Vec::new();
-        for (y, row) in input.clone().iter().enumerate() {
-            for (x, _) in row.iter().enumerate() {
-                input[y][x] += 1;
-                if input[y][x] > 9 {
-                    flashers.push((y, x));
-                    flashes += 1;
-                }
-            }
-        }
-
-        let mut flashed = Vec::new();
-        while !flashers.is_empty() {
-            let flasher = flashers.pop().unwrap();
-            let neighbours = get_neighbours(flasher, &input);
-            for neighbour in neighbours {
-                input[neighbour.0][neighbour.1] += 1;
-                if input[neighbour.0][neighbour.1] == 10 {
-                    flashers.push(neighbour);
-                    flashes += 1;
-                }
-            }
-            flashed.push(flasher);
-        }
-
-        for flasher in flashed {
-            input[flasher.0][flasher.1] = 0;
-        }
+        let (flashes_this_cycle, _) = cycle_of_life(&mut input);
+        flashes += flashes_this_cycle;
     }
     flashes
+}
+
+fn cycle_of_life(input: &mut Vec<InputType>) -> (u64, usize) {
+    let mut flashes = 0;
+    let mut flashers = Vec::new();
+    for (y, row) in input.clone().iter().enumerate() {
+        for (x, _) in row.iter().enumerate() {
+            input[y][x] += 1;
+            if input[y][x] > 9 {
+                flashers.push((y, x));
+                flashes += 1;
+            }
+        }
+    }
+
+    let mut flashed = Vec::new();
+    while !flashers.is_empty() {
+        let flasher = flashers.pop().unwrap();
+        let neighbours = get_neighbours(flasher, &input);
+        for neighbour in neighbours {
+            input[neighbour.0][neighbour.1] += 1;
+            if input[neighbour.0][neighbour.1] == 10 {
+                flashers.push(neighbour);
+                flashes += 1;
+            }
+        }
+        flashed.push(flasher);
+    }
+
+    for flasher in &flashed {
+        input[flasher.0][flasher.1] = 0;
+    }
+    (flashes, flashed.len())
 }
 
 fn part2(input: &Vec<InputType>) -> u64 {
@@ -85,38 +92,13 @@ fn part2(input: &Vec<InputType>) -> u64 {
     let octopuses_max = input.len() * input[0].len();
     let mut rounds = 0;
     loop {
-        let mut flashers = Vec::new();
-        for (y, row) in input.clone().iter().enumerate() {
-            for (x, _) in row.iter().enumerate() {
-                input[y][x] += 1;
-                if input[y][x] > 9 {
-                    flashers.push((y, x));
-                }
-            }
-        }
-
-        let mut flashed = Vec::new();
-        while !flashers.is_empty() {
-            let flasher = flashers.pop().unwrap();
-            let neighbours = get_neighbours(flasher, &input);
-            for neighbour in neighbours {
-                input[neighbour.0][neighbour.1] += 1;
-                if input[neighbour.0][neighbour.1] == 10 {
-                    flashers.push(neighbour);
-                }
-            }
-            flashed.push(flasher);
-        }
-
-        for flasher in &flashed {
-            input[flasher.0][flasher.1] = 0;
-        }
-        if flashed.len() == octopuses_max {
+        let (_, flashed_this_cycle) = cycle_of_life(&mut input);
+        rounds += 1;
+        if octopuses_max == flashed_this_cycle {
             break;
         }
-        rounds += 1;
     }
-    rounds + 1
+    rounds
 }
 
 #[cfg(test)]
@@ -126,12 +108,12 @@ mod tests {
     #[test]
     fn day11_part1_output() {
         let input = parse_input(&get_input());
-        assert_eq!(392043, part1(&input));
+        assert_eq!(1739, part1(&input));
     }
 
     #[test]
     fn day11_part2_output() {
         let input = parse_input(&get_input());
-        assert_eq!(1605968119, part2(&input));
+        assert_eq!(324, part2(&input));
     }
 }
