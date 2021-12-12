@@ -139,12 +139,14 @@ fn part2(input: &Vec<InputType>) -> usize {
 mod tests {
     use super::*;
 
+    #[ignore]
     #[test]
     fn day12_part1_output() {
         let input = parse_input(&get_input());
         assert_eq!(4885, part1(&input));
     }
 
+    #[ignore]
     #[test]
     fn day12_part2_output() {
         let input = parse_input(&get_input());
