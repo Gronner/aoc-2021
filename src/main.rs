@@ -4,8 +4,8 @@ use std::env;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if let Ok(selection) = usize::from_str(&args[1]) {
-        aoc_2021::get_days()[selection]();
+    if 2 == args.len() {
+        aoc_2021::get_days()[args[1].parse::<usize>().unwrap()]();
     } else {
         for call in aoc_2021::get_days() {
             call();
