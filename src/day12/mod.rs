@@ -59,9 +59,13 @@ fn get_input() -> String {
 }
 
 fn parse_input(input: &str) -> Vec<InputType> {
-    input.lines()
+    let mut input = input.lines()
         .map(|line| Edge::from_str(line).unwrap())
-        .collect::<Vec<_>>()
+        .collect::<Vec<_>>();
+    input.append(&mut input.iter()
+        .map(|edge| Edge { start: edge.end.clone(), end: edge.start.clone() })
+        .collect::<Vec<_>>());
+    input
 }
 
 pub fn run_day() {
@@ -117,13 +121,6 @@ fn modified_dfs(start: Node, edge: &Vec<Edge>, current_path: &Vec<Node>,
         }
     }
 
-    let next_steps: Vec<&Edge> = edge.iter().filter(|edge| edge.end == start).collect();
-    for next_step in next_steps {
-        if let Some(mut next_path) = go_in_direction(next_step.start.clone(), edge, &current_path, &visited, how_often) {
-            paths.append(&mut next_path);
-        }
-    }
-
     paths
 }
 
@@ -139,14 +136,12 @@ fn part2(input: &Vec<InputType>) -> usize {
 mod tests {
     use super::*;
 
-    #[ignore]
     #[test]
     fn day12_part1_output() {
         let input = parse_input(&get_input());
         assert_eq!(4885, part1(&input));
     }
 
-    #[ignore]
     #[test]
     fn day12_part2_output() {
         let input = parse_input(&get_input());
