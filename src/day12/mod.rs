@@ -2,10 +2,10 @@ use aoc_downloader::download_day;
 use regex::Regex;
 use std::{str::FromStr, collections::HashMap};
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 enum Node {
-    Upper(String),
-    Lower(String),
+    Upper(u32),
+    Lower(u32),
     Start,
     End,
 }
@@ -18,9 +18,9 @@ impl FromStr for Node {
             "start" => Node::Start,
             "end" => Node::End,
             _ => if input.chars().nth(0).unwrap().is_lowercase() {
-                    Node::Lower(input.to_string())
+                    Node::Lower(input.chars().map(|c| c as u32).sum())
                 } else {
-                    Node::Upper(input.to_string())
+                    Node::Upper(input.chars().map(|c| c as u32).sum())
                 },
         };
         Ok(node)
@@ -63,7 +63,7 @@ fn parse_input(input: &str) -> Vec<InputType> {
         .map(|line| Edge::from_str(line).unwrap())
         .collect::<Vec<_>>();
     input.append(&mut input.iter()
-        .map(|edge| Edge { start: edge.end.clone(), end: edge.start.clone() })
+        .map(|edge| Edge { start: edge.end, end: edge.start})
         .collect::<Vec<_>>());
     input
 }
@@ -99,7 +99,7 @@ fn go_in_direction(direction: Node, edge: &Vec<Edge>, current_path: &Vec<Node>,
         return None;
     }
     
-    Some(modified_dfs(direction.clone(), edge, &current_path, &visited, how_often))
+    Some(modified_dfs(direction, edge, &current_path, &visited, how_often))
 }
 
 fn modified_dfs(start: Node, edge: &Vec<Edge>, current_path: &Vec<Node>,
@@ -107,8 +107,8 @@ fn modified_dfs(start: Node, edge: &Vec<Edge>, current_path: &Vec<Node>,
     let mut visited = visited.clone();
     let mut current_path = current_path.clone();
     let mut paths = Vec::new();
-    visited.entry(start.clone()).and_modify(|visits| *visits += 1).or_insert(1);
-    current_path.push(start.clone());
+    visited.entry(start).and_modify(|visits| *visits += 1).or_insert(1);
+    current_path.push(start);
 
     if start == Node::End {
         return vec![current_path];
@@ -116,7 +116,7 @@ fn modified_dfs(start: Node, edge: &Vec<Edge>, current_path: &Vec<Node>,
 
     let next_steps: Vec<&Edge> = edge.iter().filter(|edge| edge.start == start).collect();
     for next_step in next_steps {
-        if let Some(mut next_path) = go_in_direction(next_step.end.clone(), edge, &current_path, &visited, how_often) {
+        if let Some(mut next_path) = go_in_direction(next_step.end, edge, &current_path, &visited, how_often) {
             paths.append(&mut next_path);
         }
     }
