@@ -20,7 +20,7 @@ fn parse_input(input: &str) -> Vec<InputType> {
 pub fn run_day() {
     let input = get_input();
     let input = parse_input(&input);
-    println!("Running day {}:\n\tPart2 {}\n\tPart2 {}", DAY, part1(&input), part2(&input));
+    println!("Running day {}:\n\tPart 1 {}\n\tPart 2 {}", DAY, part1(&input), part2(&input));
 }
 
 fn get_neighbours(current_pos: Coordinate, input: &Vec<InputType>) -> Vec<Coordinate> {
