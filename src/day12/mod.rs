@@ -1,67 +1,27 @@
 use aoc_downloader::download_day;
 use regex::Regex;
-use std::{str::FromStr, collections::HashMap};
-
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
-enum Node {
-    Upper(String),
-    Lower(String),
-    Start,
-    End,
-}
-
-impl FromStr for Node {
-    type Err = std::io::Error;
-
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
-        let node = match input {
-            "start" => Node::Start,
-            "end" => Node::End,
-            _ => if input.chars().nth(0).unwrap().is_lowercase() {
-                    Node::Lower(input.to_string())
-                } else {
-                    Node::Upper(input.to_string())
-                },
-        };
-        Ok(node)
-    }
-}
-
-#[derive(Debug)]
-struct Edge {
-    start: Node,
-    end: Node,
-}
-
-impl FromStr for Edge {
-    type Err = std::io::Error;
-
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(r"(.+)-(.+)").unwrap();
-        }
-
-        Ok(RE.captures(input).and_then(|captured| {
-            Some(Edge {
-                start: Node::from_str(&captured[1]).unwrap(),
-                end: Node::from_str(&captured[2]).unwrap(),
-            })
-        }).unwrap())
-    }
-}
+use std::collections::{VecDeque, HashMap, HashSet};
 
 const DAY: u32 = 12;
-type InputType = Edge;
+type InputType = HashMap<String, Vec<String>>;
 
 fn get_input() -> String {
     download_day((DAY) as u32, "input").unwrap();
     std::fs::read_to_string(format!("input/input{}.txt", DAY)).unwrap()
 }
 
-fn parse_input(input: &str) -> Vec<InputType> {
-    input.lines()
-        .map(|line| Edge::from_str(line).unwrap())
-        .collect::<Vec<_>>()
+fn parse_input(input: &str) -> InputType {
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"(.+)-(.+)").unwrap();
+    }
+    let mut map: HashMap<String, Vec<String>> = HashMap::new();
+    for line in input.lines() {
+        let (start, end) = RE.captures(line)
+            .and_then(|captured| { Some((captured[1].to_string(), captured[2].to_string())) }).unwrap();
+        map.entry(start.clone()).and_modify(|next| next.push(end.clone())).or_insert(vec![end.clone()]);
+        map.entry(end.clone()).and_modify(|next| next.push(start.clone())).or_insert(vec![start]);
+    }
+    map
 }
 
 pub fn run_day() {
@@ -70,69 +30,38 @@ pub fn run_day() {
     println!("Running day {}:\n\tPart 1 {}\n\tPart 2 {}", DAY, part1(&input), part2(&input));
 }
 
-fn visit_cave_only(how_often: usize, visited: &HashMap<Node, usize>) -> bool {
-    visited.iter()
-        .filter(|(node, count)| if let Node::Lower(_) = node {
-            **count == how_often
-        } else {
-            false
-        })
-        .count() != 0
-}
+fn solve(input: &InputType, part2: bool) -> usize {
+    let mut count = 0;
+    let mut everything: VecDeque<(String, HashSet<String>, Option<String>)> = VecDeque::new();
+    everything.push_back(("start".to_string(), HashSet::from(["start".to_string()]), None));
 
-fn go_in_direction(direction: Node, edge: &Vec<Edge>, current_path: &Vec<Node>,
-    visited: &HashMap<Node, usize>, how_often: usize) -> Option<Vec<Vec<Node>>> {
-
-    if let Node::Lower(_) = direction {
-        if visited.contains_key(&direction) {
-            if visit_cave_only(how_often, &visited) {
-                return None;
+    while let Some((position, small_visited, twice_visited)) = everything.pop_front() {
+        if position == "end" {
+            count += 1;
+            continue;
+        }
+        for next in &input[&position] {
+            if !small_visited.contains(next) {
+                let mut new_small_visited = small_visited.clone();
+                if next.chars().nth(0).unwrap().is_lowercase() {
+                    new_small_visited.insert(next.clone());
+                } 
+                everything.push_back((next.clone(), new_small_visited, twice_visited.clone()));
+            } else if small_visited.contains(next) && twice_visited.is_none() &&
+                next != "start" && next != "end" && part2 {
+                everything.push_back((next.clone(), small_visited.clone(), Some(next.clone())));
             }
         }
     }
-
-    if direction == Node::Start {
-        return None;
-    }
-    
-    Some(modified_dfs(direction.clone(), edge, &current_path, &visited, how_often))
+    count
 }
 
-fn modified_dfs(start: Node, edge: &Vec<Edge>, current_path: &Vec<Node>,
-    visited: &HashMap<Node, usize>, how_often: usize) -> Vec<Vec<Node>> {
-    let mut visited = visited.clone();
-    let mut current_path = current_path.clone();
-    let mut paths = Vec::new();
-    visited.entry(start.clone()).and_modify(|visits| *visits += 1).or_insert(1);
-    current_path.push(start.clone());
-
-    if start == Node::End {
-        return vec![current_path];
-    }
-
-    let next_steps: Vec<&Edge> = edge.iter().filter(|edge| edge.start == start).collect();
-    for next_step in next_steps {
-        if let Some(mut next_path) = go_in_direction(next_step.end.clone(), edge, &current_path, &visited, how_often) {
-            paths.append(&mut next_path);
-        }
-    }
-
-    let next_steps: Vec<&Edge> = edge.iter().filter(|edge| edge.end == start).collect();
-    for next_step in next_steps {
-        if let Some(mut next_path) = go_in_direction(next_step.start.clone(), edge, &current_path, &visited, how_often) {
-            paths.append(&mut next_path);
-        }
-    }
-
-    paths
+fn part1(input: &InputType) -> usize {
+    solve(input, false)
 }
 
-fn part1(input: &Vec<InputType>) -> usize {
-    modified_dfs(Node::Start, input, &vec![], &HashMap::new(), 1).len()
-}
-
-fn part2(input: &Vec<InputType>) -> usize {
-    modified_dfs(Node::Start, input, &vec![], &HashMap::new(), 2).len()
+fn part2(input: &InputType) -> usize {
+    solve(input, true)
 }
 
 #[cfg(test)]
