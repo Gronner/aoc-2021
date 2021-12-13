@@ -19,38 +19,32 @@ fn parse_input(input: &str) -> Vec<InputType> {
 pub fn run_day() {
     let input = get_input();
     let input = parse_input(&input);
-    println!("Running day {}:\n\tPart 1 {}\n\tPart 2 {}", DAY, part1(&input), part2(&input));
+    println!("Running day {}:\n\tPart 1 {}\n\tPart 2:", DAY, part1(&input));
+    part2(&&input);
 }
 
-fn part1(input: &Vec<InputType>) -> u64 {
+fn print_paper(input: &Vec<InputType>) -> (Vec<Vec<usize>>, Vec<Vec<usize>>) {
     lazy_static! {
         static ref RE: Regex = Regex::new(r"fold along (.)=(\d+)").unwrap();
     }
 
-    //let mut paper = vec![vec![0; 15]; 15];
     let mut paper = vec![vec![0; 1500]; 1500];
-    let mut folds = Vec::new();
+    let mut folding_instructions = Vec::new();
     let mut max_x = 0;
     let mut max_y = 0;
     for line in input {
         if !line.starts_with("fold along") {
-            let coords: Vec<usize> = line.split(",").map(|number| number.parse::<usize>().unwrap()).collect();
-            if max_y < coords[1] {
-                max_y = coords[1];
-            }
-            if max_x < coords[0] {
-                max_x = coords[0];
-            }
+            let coords: Vec<usize> = line.split(",")
+                .map(|number| number.parse::<usize>().unwrap())
+                .collect();
+            max_y = std::cmp::max(max_y, coords[1]);
+            max_x = std::cmp::max(max_x, coords[0]);
             paper[coords[1]][coords[0]] = 1;
         } else {
             RE.captures(line).and_then(|captured| {
                 let value = captured[2].parse::<usize>().unwrap();
-                let idx = if captured[1] == *"y" { 
-                    0
-                } else {
-                    1
-                };
-                folds.push(vec![idx, value]);
+                let idx = if captured[1] == *"y" { 0 } else { 1 };
+                folding_instructions.push(vec![idx, value]);
             Some(true)
             }).unwrap();
         }
@@ -59,7 +53,14 @@ fn part1(input: &Vec<InputType>) -> u64 {
     for row in &mut paper {
         row.drain(max_x+1..);
     }
-    fold_it(folds[0].clone(), &mut paper);
+
+    (paper, folding_instructions)
+}
+
+fn part1(input: &Vec<InputType>) -> u64 {
+    let (mut paper, folding_instructions) = print_paper(input);
+
+    fold_it(folding_instructions[0].clone(), &mut paper);
     let mut count = 0;
     for row in paper {
         for spot in row {
@@ -100,43 +101,8 @@ fn fold_it(fold: Vec<usize>, paper: &mut Vec<Vec<usize>>) {
 }
 
 fn part2(input: &Vec<InputType>) -> u64 {
-    lazy_static! {
-        static ref RE: Regex = Regex::new(r"fold along (.)=(\d+)").unwrap();
-    }
-
-    //let mut paper = vec![vec![0; 15]; 15];
-    let mut paper = vec![vec![0; 1500]; 1500];
-    let mut folds = Vec::new();
-    let mut max_x = 0;
-    let mut max_y = 0;
-    for line in input {
-        if !line.starts_with("fold along") {
-            let coords: Vec<usize> = line.split(",").map(|number| number.parse::<usize>().unwrap()).collect();
-            if max_y < coords[1] {
-                max_y = coords[1];
-            }
-            if max_x < coords[0] {
-                max_x = coords[0];
-            }
-            paper[coords[1]][coords[0]] = 1;
-        } else {
-            RE.captures(line).and_then(|captured| {
-                let value = captured[2].parse::<usize>().unwrap();
-                let idx = if captured[1] == *"y" { 
-                    0
-                } else {
-                    1
-                };
-                folds.push(vec![idx, value]);
-            Some(true)
-            }).unwrap();
-        }
-    }
-    paper.drain(max_y+1..);
-    for row in &mut paper {
-        row.drain(max_x+1..);
-    }
-    for fold in folds {
+    let (mut paper, folding_instructions) = print_paper(input);
+    for fold in folding_instructions {
         fold_it(fold, &mut paper);
     }
     for row in paper {
