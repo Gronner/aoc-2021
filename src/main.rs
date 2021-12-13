@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use aoc_2021;
 use std::env;
 
