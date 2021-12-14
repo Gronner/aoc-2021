@@ -37,8 +37,7 @@ fn part1(input: &Vec<InputType>) -> u64 {
             Some(0)
         }).unwrap();
     }
-    for round in 0..40 {
-        println!("Round: {}", round); 
+    for _ in 0..10 {
         let mut next_template = Vec::new();
         next_template.push(template[0]);
         for pair in template.windows(2) {
@@ -55,8 +54,7 @@ fn part1(input: &Vec<InputType>) -> u64 {
     }
     let mut max = 0;
     let mut min = u64::MAX;
-    for (element, count) in occurences {
-        println!("{}, {}", element, count);
+    for (_, count) in occurences {
         max = std::cmp::max(max, count);
         min = std::cmp::min(min, count);
     }
@@ -64,7 +62,71 @@ fn part1(input: &Vec<InputType>) -> u64 {
 }
 
 fn part2(input: &Vec<InputType>) -> u64 {
-    0
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"(.+) -> (.)").unwrap();
+    }
+    let template: Vec<char> = input[0].chars().collect();
+    let mut translations: HashMap<String, char> = HashMap::new();
+    for line in input[1..].into_iter() {
+        RE.captures(line).and_then(|captured| {
+            translations.insert(
+                captured[1].to_string(),
+                captured[2].chars().nth(0).unwrap());
+            Some(0)
+        }).unwrap();
+    }
+
+    let mut occurences: HashMap<String, u64> = HashMap::new();
+    for pair in template.windows(2) {
+        occurences.entry(pair.into_iter().collect::<String>())
+            .and_modify(|count| *count += 1)
+            .or_insert(1);
+    }
+    println!("{:?}", occurences);
+
+    for round in 0..40 {
+        println!("Round: {}", round + 1);
+
+        let mut next_occurences: HashMap<String, u64> = HashMap::new();
+        for (pair, pair_count) in &occurences {
+
+            let first_element = pair.chars().nth(0).unwrap();
+            let second_element = pair.chars().nth(1).unwrap();
+            let new_element = translations[pair];
+
+            println!("{}, {}, {}", first_element, new_element, second_element);
+            next_occurences.entry(vec![first_element, new_element].iter().collect::<String>())
+                .and_modify(|new_pair_count| *new_pair_count += pair_count)
+                .or_insert(*pair_count);
+
+            next_occurences.entry(vec![new_element, second_element].iter().collect::<String>())
+                .and_modify(|new_pair_count| *new_pair_count += pair_count)
+                .or_insert(*pair_count);
+        }
+        occurences = next_occurences.clone();
+        println!("{:?}", occurences);
+    }
+
+    let mut element_occurences: HashMap<char, u64> = HashMap::new();
+    for (pair, pair_count) in &occurences {
+        let element = pair.chars().nth(0).unwrap();
+        element_occurences.entry(element)
+            .and_modify(|element_count| *element_count += pair_count)
+            .or_insert(*pair_count);
+    }
+    element_occurences.entry(*template.iter().last().unwrap())
+        .and_modify(|element_count| *element_count += 1)
+        .or_insert(1);
+
+
+    let mut max = 0;
+    let mut min = u64::MAX;
+    for (element, count) in element_occurences {
+        println!("{}, {}", element, count);
+        max = std::cmp::max(max, count);
+        min = std::cmp::min(min, count);
+    }
+    max - min
 }
 
 #[cfg(test)]
