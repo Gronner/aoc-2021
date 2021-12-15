@@ -1,35 +1,8 @@
 use aoc_downloader::download_day;
-use std::{collections::{HashMap, HashSet}, cmp::Ordering};
 use pathfinding::prelude::dijkstra;
 
 const DAY: u32 = 15;
-type InputType = Vec<Vec<Node>>;
-
-#[derive(Clone, Copy, Debug, Hash)]
-struct Node {
-    pub weight: u64,
-    pub accumulated_risk: u64,
-}
-
-impl PartialEq for Node {
-    fn eq(&self, other: &Self) -> bool {
-        self.accumulated_risk == other.accumulated_risk
-    }
-}
-
-impl Eq for Node {}
-
-impl PartialOrd for Node {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for Node {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.accumulated_risk.cmp(&other.accumulated_risk)
-    }
-}
+type InputType = Vec<Vec<u64>>;
 
 fn get_input() -> String {
     download_day((DAY) as u32, "input").unwrap();
@@ -40,10 +13,8 @@ fn parse_input(input: &str) -> InputType {
     input.lines()
         .filter(|line| *line != "")
         .map(|line| line.chars().map(|c| {
-            Node {
-                weight: c.to_digit(10).unwrap() as u64,
-                accumulated_risk: u64::MAX,
-            }}).collect::<Vec<Node>>())
+                c.to_digit(10).unwrap() as u64
+            }).collect::<Vec<u64>>())
         .collect()
 }
 
@@ -53,28 +24,7 @@ pub fn run_day() {
     println!("Running day {}:\n\tPart 1 {}\n\tPart 2: {}", DAY, part1(input.clone()), part2(input.clone()));
 }
 
-fn get_neighbours(current_pos: (usize, usize), input: &InputType) -> Vec<(usize, usize)> {
-    lazy_static!{
-        static ref OFFSETS: Vec<(isize, isize)> = vec![
-            (0, 1), (1, 0), (0, -1), (-1, 0),
-        ];
-    }
-    let max_x = input[0].len() as isize;
-    let max_y = input.len() as isize;
-    let mut neighbours = vec![];
-    for offset in OFFSETS.iter() {
-        let new_pos = (current_pos.0 as isize + offset.0,
-            current_pos.1 as isize + offset.1);
-        if new_pos.0 < 0 || new_pos.0 >= max_y || new_pos.1 < 0 || new_pos.1 >= max_x {
-            continue;
-        }
-        neighbours.push((new_pos.0 as usize, new_pos.1 as usize));
-    }
-
-    neighbours
-}
-
-fn get_neighbours2(current_pos: (usize, usize), input: &Vec<Vec<u64>>) -> Vec<((usize, usize), usize)> {
+fn get_neighbours(current_pos: (usize, usize), input: &Vec<Vec<u64>>) -> Vec<((usize, usize), usize)> {
     lazy_static!{
         static ref OFFSETS: Vec<(isize, isize)> = vec![
             (0, 1), (1, 0), (0, -1), (-1, 0),
@@ -96,58 +46,46 @@ fn get_neighbours2(current_pos: (usize, usize), input: &Vec<Vec<u64>>) -> Vec<((
     neighbours
 }
 
-fn part1(mut input: InputType) -> u64 {
+fn part1(input: InputType) -> u64 {
+    let start = (0, 0);
     let end = (input.len() - 1, input[0].len() - 1);
-    let mut graph: HashMap<(usize, usize), Node> = HashMap::new();
 
-    input[0][0].accumulated_risk = 0;
+    let result = dijkstra(&start, |&p| get_neighbours(p, &input), |&p| p == end).unwrap();
 
-    for (y, row) in input.iter().enumerate() {
-        for (x, spot) in row.iter().enumerate() {
-            graph.insert((y, x), *spot);
-        }
+    result.1 as u64
+}
+
+fn part2(input: InputType) -> u64 {
+    let input = expand(&input);
+
+    let start = (0, 0);
+    let end = (input.len() - 1, input[0].len() - 1);
+
+    let result = dijkstra(&start, |&p| get_neighbours(p, &input), |&p| p == end).unwrap();
+
+    result.1 as u64
+}
+
+fn expand(input: &Vec<Vec<u64>>) -> InputType {
+    let mut expanded_input = input.clone();
+
+    for x in 1..5 {
+        input.iter()
+            .enumerate()
+            .for_each(|(y, row)| expanded_input[y].append(&mut row.iter()
+                .map(|&value| update_weight(value, x))
+                .collect()));
     }
 
-    while !graph.is_empty() {
-        let mut current_cords = (0, 0);
-        let mut min_risk = u64::MAX;
-        for (y, row) in input.iter().enumerate() {
-            for (x, spot) in row.iter().enumerate() {
-                if !graph.contains_key(&(y, x)) {
-                    continue;
-                }
-                if spot.accumulated_risk < min_risk {
-                    min_risk = spot.accumulated_risk;
-                    current_cords = (y, x);
-                }
-            }
-        }
-        graph.remove(&current_cords);
-
-        for neighbour in get_neighbours(current_cords, &input) {
-            let new_distance = input[current_cords.0][current_cords.1].accumulated_risk + input[neighbour.0][neighbour.1].weight;
-            if new_distance < input[neighbour.0][neighbour.1].accumulated_risk {
-                input[neighbour.0][neighbour.1].accumulated_risk = new_distance;
-            }
-        }
+    let tmp_input = expanded_input.clone();
+    for y in 1..5 {
+        expanded_input.append(&mut tmp_input.iter()
+            .map(|row| row.iter().map(|&value| update_weight(value, y))
+                .collect())
+            .collect());
     }
 
-    let mut current = end;
-    let mut visited: HashSet<(usize, usize)> = HashSet::new();
-    while current != (0, 0) {
-        visited.insert(current);
-        let mut min_risk = u64::MAX;
-        for neighbour in get_neighbours(current, &input) {
-            if visited.contains(&neighbour) {
-                continue;
-            }
-            if input[neighbour.0][neighbour.1].accumulated_risk < min_risk {
-                current = neighbour;
-                min_risk = input[neighbour.0][neighbour.1].accumulated_risk;
-            }
-        }
-    }
-    input[end.0][end.1].accumulated_risk
+    expanded_input
 }
 
 fn update_weight(mut old: u64, iteration: u64) -> u64 {
@@ -158,41 +96,6 @@ fn update_weight(mut old: u64, iteration: u64) -> u64 {
         }
     }
     old
-}
-
-fn part2(input: InputType) -> u64 {
-    let mut new_input = input.clone();
-    for x_ in 1..5 {
-        for (y, row) in input.iter().enumerate() {
-            new_input[y].append(&mut row.iter()
-                .map(|v| { Node { weight: update_weight(v.weight, x_), accumulated_risk: u64::MAX}} )
-                .collect())
-        }
-    }
-    let new_new_input = new_input.clone();
-
-    for y_ in 1..5 {
-        new_input.append(&mut new_new_input.iter()
-            .map(|row| row.iter().map(|v| { Node { weight: update_weight(v.weight, y_), accumulated_risk: u64::MAX}})
-            .collect()).collect());
-    }
-
-    let mut input = Vec::new();
-
-    for row in new_input {
-        let mut new_row = Vec::new();
-        for spot in row {
-            new_row.push(spot.weight);
-        }
-        input.push(new_row);
-    }
-
-    let start = (0, 0);
-    let end = (input.len() - 1, input[0].len() - 1);
-
-    let result = dijkstra(&start, |&p| get_neighbours2(p, &input), |&p| p == end).unwrap();
-
-    result.1 as u64
 }
 
 #[cfg(test)]
