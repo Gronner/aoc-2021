@@ -10,6 +10,7 @@ aoc-downloader = { git = "https://github.com/Gronner/aoc-downloader" }
 lazy_static = "1.4.0"
 num = "0.4.0"
 regex = "1"
+petgraph = "0.6.0"
 
 [profile.dev]
 opt-level = 3
