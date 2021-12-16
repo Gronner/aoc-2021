@@ -4,10 +4,22 @@ const DAY: u32 = 16;
 type InputType = Vec<char>;
 
 #[derive(Debug)]
+enum Packet{
+    Lit(Literal),
+    Op(Operator),
+}
+
+#[derive(Debug)]
 struct Literal {
-    packet_version: u64, // first three
-    value: u64, // 5 - 15 bits, 1st bit is end indicator and gets discarded
-    // 3 0s
+    packet_version: u64,
+    value: u64,
+}
+
+#[derive(Debug)]
+struct Operator {
+    packet_version: u64,
+    type_id: u64,
+    subpackets: Vec<Packet>,
 }
 
 #[derive(Debug)]
@@ -15,20 +27,6 @@ enum LengthValue {
     TotalLength(usize),
     SubPackets(usize),
 }
-
-#[derive(Debug)]
-struct Operator {
-    packet_version: u64, // first three
-    type_id: u64, // next three
-    subpackets: Vec<Packet>,
-}
-
-#[derive(Debug)]
-enum Packet{
-    Lit(Literal),
-    Op(Operator),
-}
-
 
 fn get_input() -> String {
     download_day((DAY) as u32, "input").unwrap();
@@ -52,21 +50,10 @@ pub fn run_day() {
     println!("Running day {}:\n\tPart 1 {}\n\tPart 2: {}", DAY, part1(&input), part2(&input));
 }
 
-
-fn get_version(input: &mut InputType) -> u64 {
-    let mut buffer = vec![];
-    buffer.push(input.pop().unwrap());
-    buffer.push(input.pop().unwrap());
-    buffer.push(input.pop().unwrap());
-    u64::from_str_radix(&buffer.iter().collect::<String>(), 2).unwrap()
-}
-
-fn get_type_id(input: &mut InputType) -> u64 {
-    let mut buffer = vec![];
-    buffer.push(input.pop().unwrap());
-    buffer.push(input.pop().unwrap());
-    buffer.push(input.pop().unwrap());
-    u64::from_str_radix(&buffer.iter().collect::<String>(), 2).unwrap()
+fn get_value_by_length(input: &mut InputType, length: usize) -> u64 {
+    let len = input.len();
+    let buffer: String = input.drain(len-length..).rev().collect();
+    u64::from_str_radix(&buffer, 2).unwrap()
 }
 
 fn get_value(input: &mut InputType) -> (u64, usize) {
@@ -74,10 +61,8 @@ fn get_value(input: &mut InputType) -> (u64, usize) {
     let mut buffer = vec![];
     loop {
         let end = input.pop().unwrap();
-        buffer.push(input.pop().unwrap());
-        buffer.push(input.pop().unwrap());
-        buffer.push(input.pop().unwrap());
-        buffer.push(input.pop().unwrap());
+        let len = input.len();
+        buffer.append(&mut input.drain(len-4..).rev().collect());
         parsed += 5;
         if end == '0' {
             break;
@@ -87,17 +72,12 @@ fn get_value(input: &mut InputType) -> (u64, usize) {
 }
 
 fn get_length_type(input: &mut InputType) -> (LengthValue, usize) {
-    let mut buffer = vec![];
     if input.pop().unwrap() == '0' {
-        for _ in 0..15 {
-            buffer.push(input.pop().unwrap());
-        }
-        (LengthValue::TotalLength(usize::from_str_radix(&buffer.iter().collect::<String>(), 2).unwrap()), 16)
+        let length = get_value_by_length(input, 15);
+        (LengthValue::TotalLength(length as usize), 16)
     } else {
-        for _ in 0..11 {
-            buffer.push(input.pop().unwrap());
-        }
-        (LengthValue::SubPackets(usize::from_str_radix(&buffer.iter().collect::<String>(), 2).unwrap()), 12)
+        let length = get_value_by_length(input, 11);
+        (LengthValue::SubPackets(length as usize), 12)
     }
 }
 
@@ -128,9 +108,10 @@ fn parse_by_number(input: &mut InputType, mut len: usize) -> (Vec<Packet>, usize
 
 fn parse_packet(input: &mut InputType) -> (Packet, usize) {
     let mut parsed = 0;
-    let packet_version = get_version(input);
+
+    let packet_version = get_value_by_length(input, 3);
     parsed += 3;
-    let type_id = get_type_id(input);
+    let type_id = get_value_by_length(input, 3);
     parsed += 3;
 
     if type_id == 4 {
@@ -169,20 +150,8 @@ fn calculate(packet: &Packet) -> u64 {
         Packet::Lit(lit) => lit.value,
         Packet::Op(op) => {
             match op.type_id {
-                0 => {
-                    let mut sum = 0;
-                    for package in &op.subpackets {
-                        sum += calculate(package);
-                    }
-                    sum
-                },
-                1 => {
-                    let mut prod = 1;
-                    for package in &op.subpackets {
-                        prod *= calculate(package);
-                    }
-                    prod 
-                },
+                0 => op.subpackets.iter().fold(0, |acc, pkg| acc + calculate(pkg)),
+                1 => op.subpackets.iter().fold(1, |acc, pkg| acc * calculate(pkg)),
                 2 => {
                     let mut min = u64::MAX;
                     for package in &op.subpackets {
@@ -197,15 +166,9 @@ fn calculate(packet: &Packet) -> u64 {
                     }
                     max
                 },
-                5 => {
-                    if calculate(&op.subpackets[0]) > calculate(&op.subpackets[1]) { 1 } else { 0 }
-                },
-                6 => {
-                    if calculate(&op.subpackets[0]) < calculate(&op.subpackets[1]) { 1 } else { 0 }
-                },
-                7 => {
-                    if calculate(&op.subpackets[0]) == calculate(&op.subpackets[1]) { 1 } else { 0 }
-                },
+                5 => if calculate(&op.subpackets[0]) > calculate(&op.subpackets[1]) { 1 } else { 0 },
+                6 => if calculate(&op.subpackets[0]) < calculate(&op.subpackets[1]) { 1 } else { 0 },
+                7 => if calculate(&op.subpackets[0]) == calculate(&op.subpackets[1]) { 1 } else { 0 },
                 _ => panic!(),
             }
         }
