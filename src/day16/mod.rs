@@ -6,7 +6,6 @@ type InputType = Vec<char>;
 #[derive(Debug)]
 struct Literal {
     packet_version: u64, // first three
-    type_id: u64, // next three
     value: u64, // 5 - 15 bits, 1st bit is end indicator and gets discarded
     // 3 0s
 }
@@ -17,20 +16,10 @@ enum LengthValue {
     SubPackets(usize),
 }
 
-impl LengthValue {
-    fn decrease(&self) -> Self {
-        match self {
-            Self::TotalLength(i) => Self::TotalLength(i-1),
-            Self::SubPackets(i) => Self::SubPackets(i-1),
-        }
-    }
-}
-
 #[derive(Debug)]
 struct Operator {
     packet_version: u64, // first three
     type_id: u64, // next three
-    length_type: LengthValue, // next_one + 15 or 11 bits to get length
     subpackets: Vec<Packet>,
 }
 
@@ -137,12 +126,6 @@ fn parse_by_number(input: &mut InputType, mut len: usize) -> (Vec<Packet>, usize
     (subpackets, total_parsed)
 }
 
-fn discard(input: &mut InputType) {
-    input.pop();
-    input.pop();
-    input.pop();
-}
-
 fn parse_packet(input: &mut InputType) -> (Packet, usize) {
     let mut parsed = 0;
     let packet_version = get_version(input);
@@ -153,7 +136,7 @@ fn parse_packet(input: &mut InputType) -> (Packet, usize) {
     if type_id == 4 {
         let (value, size) = get_value(input);
         parsed += size;
-        (Packet::Lit(Literal { packet_version, type_id, value }), parsed)
+        (Packet::Lit(Literal { packet_version, value }), parsed)
     } else {
         let (length_type, size) = get_length_type(input);
         parsed += size;
@@ -164,7 +147,7 @@ fn parse_packet(input: &mut InputType) -> (Packet, usize) {
         }
         let (subpackets, parsed_) = output;
         parsed += parsed_;
-        (Packet::Op(Operator { packet_version, type_id, length_type, subpackets}), parsed)
+        (Packet::Op(Operator { packet_version, type_id, subpackets}), parsed)
     }
 }
 
@@ -231,13 +214,13 @@ fn calculate(packet: &Packet) -> u64 {
 
 fn part1(input: &InputType) -> u64 {
     let mut input = input.clone();
-    let (packet, parsed) = parse_packet(&mut input);
+    let (packet, _) = parse_packet(&mut input);
     get_version_number(&packet)
 }
 
 fn part2(input: &InputType) -> u64 {
     let mut input = input.clone();
-    let (packet, parsed) = parse_packet(&mut input);
+    let (packet, _) = parse_packet(&mut input);
     calculate(&packet)
 }
 
@@ -248,12 +231,12 @@ mod tests {
     #[test]
     fn day16_part1_output() {
         let input = parse_input(&get_input());
-        assert_eq!(3406, part1(&input));
+        assert_eq!(873, part1(&input));
     }
 
     #[test]
     fn day16_part2_output() {
         let input = parse_input(&get_input());
-        assert_eq!(3941782230241, part2(&input));
+        assert_eq!(402817863665, part2(&input));
     }
 }
