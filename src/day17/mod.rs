@@ -45,7 +45,7 @@ impl Probe {
         }
     }
 
-    pub fn hit(&self, target: &TargetArea) -> bool {
+    fn hit(&self, target: &TargetArea) -> bool {
         target.x_start <= self.position.0 && self.position.0 <= target.x_end &&
             target.y_start <= self.position.1 && self.position.1 <= target.y_end
     }
@@ -113,13 +113,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn day16_part1_output() {
+    fn day17_part1_output() {
         let input = parse_input(&get_input());
         assert_eq!(873, part1(&input));
     }
 
     #[test]
-    fn day16_part2_output() {
+    fn day17_part2_output() {
         let input = parse_input(&get_input());
         assert_eq!(402817863665, part2(&input));
     }
