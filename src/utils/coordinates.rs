@@ -1,6 +1,6 @@
 use num;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash)]
 pub struct Vector<T> {
     dimensions: Vec<T>
 }
@@ -12,6 +12,42 @@ impl Vector<isize> {
                 .map(|&dimension| num::signum(dimension))
                 .collect(),
         }
+    }
+
+    pub fn rotate(&mut self, axis: char, degree: u32) {
+        let degree = (degree as f64).to_radians();
+        match axis {
+            'x' => self.rotate_x(degree),
+            'y' => self.rotate_y(degree),
+            'z' => self.rotate_z(degree),
+            _ => unimplemented!(),
+        }
+    }
+
+    fn rotate_x(&mut self, degree: f64) {
+        let new_y = degree.cos() * (self.dimensions[1] as f64) - degree.sin() * (self.dimensions[2] as f64);
+        let new_z = degree.sin() * (self.dimensions[1] as f64) + degree.cos() * (self.dimensions[2] as f64);
+        self.dimensions[1] = new_y.round() as isize;
+        self.dimensions[2] = new_z.round() as isize;
+    }
+
+    fn rotate_y(&mut self, degree: f64) {
+        let new_x = degree.cos() * (self.dimensions[0] as f64) + degree.sin() * (self.dimensions[2] as f64);
+        let new_z = degree.cos() * (self.dimensions[2] as f64) - degree.sin() * (self.dimensions[0] as f64);
+        self.dimensions[0] = new_x.round() as isize;
+        self.dimensions[2] = new_z.round() as isize;
+    }
+
+    fn rotate_z(&mut self, degree: f64) {
+        let new_x = degree.cos() * (self.dimensions[0] as f64) - degree.sin() * (self.dimensions[1] as f64);
+        let new_y = degree.sin() * (self.dimensions[0] as f64) + degree.cos() * (self.dimensions[1] as f64);
+        self.dimensions[0] = new_x.round() as isize;
+        self.dimensions[1] = new_y.round() as isize;
+    }
+
+    pub fn manhattan_distance(&self) -> u64 {
+        self.dimensions.iter()
+            .fold(0, |distance, value| (distance + value.abs())) as u64
     }
 }
 
@@ -88,6 +124,19 @@ impl std::ops::Add<&Vector<usize>> for &Vector<isize> {
     }
 }
 
+impl<T: Copy + std::ops::Sub<Output = T> + num::ToPrimitive> std::ops::Sub for Vector<T> {
+    type Output = Vector<isize>;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Vector {
+            dimensions: self.dimensions.iter()
+                .zip(rhs.dimensions.iter())
+                .map(|(&l, &r)| -(l.to_isize().unwrap() -  r.to_isize().unwrap()))
+                .collect::<Vec<isize>>(),
+        }
+    }
+}
+
 impl<T: Copy + std::ops::Sub<Output = T> + num::ToPrimitive> std::ops::Sub for &Vector<T> {
     type Output = Vector<isize>;
 
@@ -141,8 +190,10 @@ impl<T> std::ops::IndexMut<char> for Vector<T> {
     }
 }
 
-impl<T: PartialEq + Copy> std::cmp::PartialEq for &Vector<T> {
+impl<T: PartialEq + Copy> std::cmp::PartialEq for Vector<T> {
     fn eq(&self, other: &Self) -> bool {
         self.dimensions.iter().zip(other.dimensions.iter()).all(|(&l, &r)| l == r)
     }
 }
+
+impl<T: Eq + Copy> std::cmp::Eq for Vector<T> {}
