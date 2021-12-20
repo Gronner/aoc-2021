@@ -24,10 +24,8 @@ pub fn run_day() {
 
 struct Image {
     pixel: HashSet<(isize, isize)>,
-    min_x: isize,
-    max_x: isize,
-    min_y: isize,
-    max_y: isize,
+    size_x: (isize, isize),
+    size_y: (isize, isize),
     empty_space: bool,
 }
 
@@ -41,24 +39,22 @@ impl Image {
 
         Image {
             pixel: image,
-            min_x,
-            max_x,
-            min_y,
-            max_y,
+            size_x: (min_x, max_x),
+            size_y: (min_y, max_y),
             empty_space,
         }
     }
 
-    pub fn get_pixel(&self, y: isize, x: isize) -> usize {
-        if y < self.min_y || y > self.max_y || x < self.min_x || x > self.max_x {
+    pub fn get_pixel(&self, current: Coords) -> usize {
+        if current.0 < self.size_y.0 || current.0 > self.size_y.1 || current.1 < self.size_x.0 || current.1 > self.size_x.1 {
             self.empty_space as usize
         } else {
-            self.pixel.contains(&(y, x)) as usize
+            self.pixel.contains(&current) as usize
         }
     }
 }
 
-fn get_pointer(image: &Image, y: isize, x: isize) -> usize {
+fn get_pointer(image: &Image, current: Coords) -> usize {
     lazy_static! {
         static ref OFFSETS: Vec<(isize, isize)> = vec![
             (-1, -1), (-1, 0), (-1, 1),
@@ -68,7 +64,7 @@ fn get_pointer(image: &Image, y: isize, x: isize) -> usize {
     }
     let mut pointer = 0;
     for (idx, offset) in OFFSETS.iter().enumerate() {
-        pointer |= image.get_pixel(y + offset.0, x + offset.1) << (8 - idx)
+        pointer |= image.get_pixel((current.0 + offset.0, current.1 + offset.1)) << (8 - idx)
     }
     pointer as usize
 
@@ -78,9 +74,9 @@ fn enhance(mut image: Image, algorithm: &Vec<bool>, rounds: usize) -> Image {
     for _ in 0..rounds {
         let mut new_image: HashSet<Coords> = HashSet::new();
 
-        for y in (image.min_y-1)..=(image.max_y+1) {
-            for x in (image.min_x-1)..=(image.max_x+1) {
-                let pointer = get_pointer(&image, y, x);
+        for y in (image.size_y.0-1)..=(image.size_y.1+1) {
+            for x in (image.size_x.0-1)..=(image.size_x.1+1) {
+                let pointer = get_pointer(&image, (y, x));
 
                 if algorithm[pointer] {
                     new_image.insert((y, x));
