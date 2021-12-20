@@ -2,8 +2,13 @@ use aoc_downloader::download_day;
 use std::collections::HashSet;
 
 const DAY: u32 = 20;
-type InputType = Vec<String>;
+type InputType = Input;
 type Coords = (isize, isize);
+
+struct Input {
+    image: Image,
+    algorithm: Vec<bool>,
+}
 
 fn get_input() -> String {
     download_day((DAY) as u32, "input").unwrap();
@@ -11,9 +16,34 @@ fn get_input() -> String {
 }
 
 fn parse_input(input: &str) -> InputType {
-    input.lines()
+    let input: Vec<String> = input.lines()
         .map(|line| line.to_string())
-        .collect()
+        .collect();
+
+    let algorithm: Vec<bool> = input[0].chars()
+        .map(|c| if c == '#' { true } else { false})
+        .collect();
+
+    let original_image: Vec<Vec<char>> = input.iter()
+        .skip(2)
+        .map(|line| line.chars()
+            .collect())
+        .collect();
+
+    let mut image: HashSet<Coords> = HashSet::new();
+    for (y, row) in original_image.iter().enumerate() {
+        for (x, pixel) in row.iter().enumerate() {
+            if *pixel == '#' {
+                image.insert((y as isize, x as isize));
+            }
+        }
+    }
+    let image = Image::new(image, false);
+
+    Input {
+        image,
+        algorithm,
+    }
 }
 
 pub fn run_day() {
@@ -22,6 +52,7 @@ pub fn run_day() {
     println!("Running day {}:\n\tPart 1 {}\n\tPart 2: {}", DAY, part1(&input), part2(&input));
 }
 
+#[derive(Clone)]
 struct Image {
     pixel: HashSet<(isize, isize)>,
     size_x: (isize, isize),
@@ -30,7 +61,6 @@ struct Image {
 }
 
 impl Image {
-
     pub fn new(image: HashSet<Coords>, empty_space: bool) -> Self {
         let min_y = image.iter().map(|pixel| pixel.0).min().unwrap();
         let max_y = image.iter().map(|pixel| pixel.0).max().unwrap();
@@ -67,7 +97,6 @@ fn get_pointer(image: &Image, current: Coords) -> usize {
         pointer |= image.get_pixel((current.0 + offset.0, current.1 + offset.1)) << (8 - idx)
     }
     pointer as usize
-
 }
 
 fn enhance(mut image: Image, algorithm: &Vec<bool>, rounds: usize) -> Image {
@@ -92,55 +121,13 @@ fn enhance(mut image: Image, algorithm: &Vec<bool>, rounds: usize) -> Image {
 
 
 fn part1(input: &InputType) -> usize {
-    let algorithm: Vec<bool> = input[0].chars()
-        .map(|c| if c == '#' { true } else { false})
-        .collect();
-
-    let original_image: Vec<Vec<char>> = input.iter()
-        .skip(2)
-        .map(|line| line.chars()
-            .collect())
-        .collect();
-
-    let mut image: HashSet<Coords> = HashSet::new();
-    for (y, row) in original_image.iter().enumerate() {
-        for (x, pixel) in row.iter().enumerate() {
-            if *pixel == '#' {
-                image.insert((y as isize, x as isize));
-            }
-        }
-    }
-
-    let image = Image::new(image, false);
-
-    let image = enhance(image, &algorithm, 2);
+    let image = enhance(input.image.clone(), &input.algorithm, 2);
 
     image.pixel.len()
 }
 
 fn part2(input: &InputType) -> usize {
-    let algorithm: Vec<bool> = input[0].chars()
-        .map(|c| if c == '#' { true } else { false})
-        .collect();
-
-    let original_image: Vec<Vec<char>> = input.iter()
-        .skip(2)
-        .map(|line| line.chars()
-            .collect())
-        .collect();
-
-    let mut image: HashSet<Coords> = HashSet::new();
-    for (y, row) in original_image.iter().enumerate() {
-        for (x, pixel) in row.iter().enumerate() {
-            if *pixel == '#' {
-                image.insert((y as isize, x as isize));
-            }
-        }
-    }
-
-    let image = Image::new(image, false);
-
-    let image = enhance(image, &algorithm, 50);
+    let image = enhance(input.image.clone(), &input.algorithm, 50);
 
     image.pixel.len()
 }
