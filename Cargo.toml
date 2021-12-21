@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 aoc-downloader = { git = "https://github.com/Gronner/aoc-downloader" }
+cached = "0.26.2"
 lazy_static = "1.4.0"
 itertools = "0.10.3"
 num = "0.4.0"

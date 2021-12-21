@@ -138,14 +138,14 @@ mod tests {
 
     #[ignore]
     #[test]
-    fn day18_part1_output() {
+    fn day20_part1_output() {
         let input = parse_input(&get_input());
         assert_eq!(4033, part1(&input));
     }
 
     #[ignore]
     #[test]
-    fn day18_part2_output() {
+    fn day20_part2_output() {
         let input = parse_input(&get_input());
         assert_eq!(4864, part2(&input));
     }
