@@ -308,13 +308,12 @@ mod tests {
         assert_eq!(expected_pair, pair);
     }
 
-    #[ignore] // The way I'm reducing explosions performs all explosions, but in the right order
     #[test]
     fn reduce_explode_works_3() {
         let input = "[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"[1..].to_string();
         let mut pair = Pair::from_str(&mut input.chars().rev().collect());
         
-        let input = "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"[1..].to_string();
+        let input = "[[3,[2,[8,0]]],[9,[5,[7,0]]]]"[1..].to_string();
         let expected_pair = Pair::from_str(&mut input.chars().rev().collect());
 
         let pair = pair.reduce();

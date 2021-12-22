@@ -105,12 +105,12 @@ mod tests {
     #[test]
     fn day15_part1_output() {
         let input = parse_input(&get_input());
-        assert_eq!(3406, part1(input));
+        assert_eq!(472, part1(input));
     }
 
     #[test]
     fn day15_part2_output() {
         let input = parse_input(&get_input());
-        assert_eq!(3941782230241, part2(input));
+        assert_eq!(2851, part2(input));
     }
 }

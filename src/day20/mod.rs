@@ -136,17 +136,17 @@ fn part2(input: &InputType) -> usize {
 mod tests {
     use super::*;
 
-    #[ignore]
+    //#[ignore]
     #[test]
     fn day20_part1_output() {
         let input = parse_input(&get_input());
-        assert_eq!(4033, part1(&input));
+        assert_eq!(5231, part1(&input));
     }
 
-    #[ignore]
+    //#[ignore]
     #[test]
     fn day20_part2_output() {
         let input = parse_input(&get_input());
-        assert_eq!(4864, part2(&input));
+        assert_eq!(14279, part2(&input));
     }
 }

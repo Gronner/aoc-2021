@@ -62,9 +62,11 @@ impl Player {
         self.score >= 1000
     }
 
+    /*
     pub fn has_quantum_won(&self) -> bool {
         self.score >= 21
     }
+    */
 
     pub fn take_move(&mut self, eyes: u64) {
         self.pos = (self.pos + eyes) % 10;
