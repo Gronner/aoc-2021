@@ -131,7 +131,6 @@ fn play_round(pos_a: u64, score_a: u64, pos_b: u64, score_b: u64) -> (u64, u64) 
             }
         }
     }
-
     win_count
 }
 
