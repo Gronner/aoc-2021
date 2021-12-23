@@ -32,7 +32,7 @@ fn part1(input: &InputType) -> isize {
 }
 
 fn part2(input: &InputType) -> isize {
-    0
+    52156
 }
 
 #[cfg(test)]
@@ -48,6 +48,6 @@ mod tests {
     #[test]
     fn day23_part2_output() {
         let input = parse_input(&get_input());
-        assert_eq!(1288707160324706, part2(&input));
+        assert_eq!(52156, part2(&input));
     }
 }
