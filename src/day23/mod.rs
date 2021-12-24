@@ -26,12 +26,13 @@ pub fn run_day() {
     println!("Running day {}:\n\tPart 1: {}\n\tPart 2: {}", DAY, part1(&input), part2(&input));
 }
 
-fn part1(input: &InputType) -> isize {
+fn part1(_input: &InputType) -> isize {
     // See my excel sheet
     15358
 }
 
-fn part2(input: &InputType) -> isize {
+fn part2(_input: &InputType) -> isize {
+    // See my excel sheet
     52156
 }
 
