@@ -27,6 +27,7 @@ mod day21;
 mod day22;
 mod day23;
 mod day24;
+mod day25;
 pub mod utils;
 
 pub fn get_days() -> Vec<fn()> {
@@ -56,5 +57,6 @@ pub fn get_days() -> Vec<fn()> {
         day22::run_day,
         day23::run_day,
         day24::run_day,
+        day25::run_day,
     ]
 }
