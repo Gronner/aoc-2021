@@ -124,8 +124,8 @@ impl Pair {
             Pair::Number(num) => {
                 if *num >= 10 {
                     return (
-                            Pair::Number(num.div_floor(&2)) +
-                            Pair::Number(num.div_ceil(&2))
+                            Pair::Number(num.div_floor(2)) +
+                            Pair::Number(num.div_ceil(2))
                         ,
                         true,
                     )
